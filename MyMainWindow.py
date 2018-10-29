@@ -17,7 +17,7 @@ Last edited: May 2018
 import math
 
 # Third-party library modules
-from PyQt5 import QtGui, QtWidgets, QtCore  # Import the PyQt5 modules we'll need
+from PySide2 import QtGui, QtWidgets, QtCore  # Import the PyQt5 modules we'll need
 # from PyQt5 import QtChart  # only available for PyQt 5.7, available in conda?
 # import pyqtgraph as pg
 

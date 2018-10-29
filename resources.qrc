@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="Icons">
+    <file>add.png</file>
+    <file>minus.png</file>
+  </qresource>
+  <qresource prefix="Figures">
+    <file>coordinates.PNG</file>
+    <file>force_sign_convention.PNG</file>
+    <file>moment_sign_convention.PNG</file>
+  </qresource>
+</RCC>

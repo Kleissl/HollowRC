@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'design.ui'
+# Form implementation generated from reading ui file 'design.ui',
+# licensing of 'design.ui' applies.
 #
-# Created: Mon Oct 29 22:34:54 2018
-#      by: pyside2-uic 2.0.0 running on PySide2 5.6.0~a1
+# Created: Sun Nov  4 22:19:25 2018
+#      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -257,10 +258,10 @@ class Ui_MainWindow(object):
         self.tab_materials.setObjectName("tab_materials")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.tab_materials)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.gridLayout_2 = QtWidgets.QGridLayout()
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.SLS_horizontalLayout = QtWidgets.QHBoxLayout()
-        self.SLS_horizontalLayout.setObjectName("SLS_horizontalLayout")
+        self.InputGrid = QtWidgets.QGridLayout()
+        self.InputGrid.setObjectName("InputGrid")
+        self.Material = QtWidgets.QHBoxLayout()
+        self.Material.setObjectName("Material")
         self.Input_verticalLayout = QtWidgets.QVBoxLayout()
         self.Input_verticalLayout.setObjectName("Input_verticalLayout")
         self.label_3 = QtWidgets.QLabel(self.tab_materials)
@@ -391,18 +392,12 @@ class Ui_MainWindow(object):
         self.Input_verticalLayout.addLayout(self.gridLayout_3)
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.Input_verticalLayout.addItem(spacerItem2)
-        self.SLS_horizontalLayout.addLayout(self.Input_verticalLayout)
-        spacerItem3 = QtWidgets.QSpacerItem(200, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.SLS_horizontalLayout.addItem(spacerItem3)
-        self.verticalLayout_8 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_8.setObjectName("verticalLayout_8")
-        self.SLS_horizontalLayout.addLayout(self.verticalLayout_8)
-        self.Plot_verticalLayout = QtWidgets.QVBoxLayout()
-        self.Plot_verticalLayout.setObjectName("Plot_verticalLayout")
-        self.SLS_horizontalLayout.addLayout(self.Plot_verticalLayout)
-        self.gridLayout_2.addLayout(self.SLS_horizontalLayout, 0, 0, 1, 1)
-        self.ULS_horizontalLayout = QtWidgets.QHBoxLayout()
-        self.ULS_horizontalLayout.setObjectName("ULS_horizontalLayout")
+        self.Material.addLayout(self.Input_verticalLayout)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.Material.addItem(spacerItem3)
+        self.InputGrid.addLayout(self.Material, 0, 0, 1, 1)
+        self.Analysis = QtWidgets.QHBoxLayout()
+        self.Analysis.setObjectName("Analysis")
         self.Input_verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.Input_verticalLayout_2.setObjectName("Input_verticalLayout_2")
         self.label_4 = QtWidgets.QLabel(self.tab_materials)
@@ -530,17 +525,20 @@ class Ui_MainWindow(object):
         self.Input_verticalLayout_2.addWidget(self.checkBox_analSLS_2)
         spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.Input_verticalLayout_2.addItem(spacerItem4)
-        self.ULS_horizontalLayout.addLayout(self.Input_verticalLayout_2)
-        spacerItem5 = QtWidgets.QSpacerItem(300, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.ULS_horizontalLayout.addItem(spacerItem5)
-        self.verticalLayout_9 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_9.setObjectName("verticalLayout_9")
-        self.ULS_horizontalLayout.addLayout(self.verticalLayout_9)
-        self.Plot_verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.Plot_verticalLayout_2.setObjectName("Plot_verticalLayout_2")
-        self.ULS_horizontalLayout.addLayout(self.Plot_verticalLayout_2)
-        self.gridLayout_2.addLayout(self.ULS_horizontalLayout, 1, 0, 1, 1)
-        self.horizontalLayout.addLayout(self.gridLayout_2)
+        self.Analysis.addLayout(self.Input_verticalLayout_2)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.Analysis.addItem(spacerItem5)
+        self.InputGrid.addLayout(self.Analysis, 1, 0, 1, 1)
+        self.horizontalLayout.addLayout(self.InputGrid)
+        self.PlotLayout = QtWidgets.QVBoxLayout()
+        self.PlotLayout.setObjectName("PlotLayout")
+        self.graphicsViewConcrete = QtWidgets.QGraphicsView(self.tab_materials)
+        self.graphicsViewConcrete.setObjectName("graphicsViewConcrete")
+        self.PlotLayout.addWidget(self.graphicsViewConcrete)
+        self.graphicsViewReinforcement = QtWidgets.QGraphicsView(self.tab_materials)
+        self.graphicsViewReinforcement.setObjectName("graphicsViewReinforcement")
+        self.PlotLayout.addWidget(self.graphicsViewReinforcement)
+        self.horizontalLayout.addLayout(self.PlotLayout)
         self.tabWidget.addTab(self.tab_materials, "")
         self.tab_loading = QtWidgets.QWidget()
         self.tab_loading.setObjectName("tab_loading")
@@ -695,7 +693,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1116, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1116, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -723,7 +721,7 @@ class Ui_MainWindow(object):
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

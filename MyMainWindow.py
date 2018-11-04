@@ -17,10 +17,8 @@ Last edited: May 2018
 import math
 
 # Third-party library modules
-from PyQt5 import QtGui, QtWidgets, QtCore  # Import the PyQt5 modules we'll need
-# from PyQt5 import QtChart  # only available for PyQt 5.7, available in conda?
-# import pyqtgraph as pg
-
+from PySide2 import QtGui, QtWidgets, QtCore, QtCharts  # Import the Qt modules we'll need
+import numpy as np
 
 # Local source tree modules
 import Analysis
@@ -93,9 +91,12 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         self.comboBox_reinf.addItems(Material.MatProp.reinf_method_options)
         self.comboBox_reinf.setCurrentIndex(0)
 
+        # make sure to start at first tab (overrules Qt designer)
+        self.tabWidget.setCurrentIndex(0)
+
         # initiate first plots
-        self.scene = QtWidgets.QGraphicsScene()  # creates a scene?
-        # self.geometry_plot()  # fit to view don't work properly when initiated in this way
+        #self.scene = QtWidgets.QGraphicsScene()  # creates a scene?
+        self.geometry_plot()  # fit to view don't work properly when initiated in this way
         # Geometry = self.getGeometry()
         # self.result_plot(Results.Results(Geometry['X'], Geometry['Y'], []))
 
@@ -121,6 +122,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             self.pushButton_analyse.setText('Analyse ULS')
         else:
             self.pushButton_analyse.setText('Analyse')
+        self.material_plot()
 
     def not_yet_implemented_popup(self):
         msg_string = 'This feature has not yet men implemented'
@@ -402,8 +404,53 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
     #     print('selection changed')
     #     print(self.scene.selectedItems())
 
-    def material_plot(self, Mat):
-        pass
+    def material_plot(self):
+        # Load material data
+        Mat = self.getMaterial()
+
+        # generate plot series
+        seriesC = QtCharts.QtCharts.QLineSeries()
+        seriesR = QtCharts.QtCharts.QLineSeries()
+        for strain in np.linspace(-0.0035, 0.003, num=50):
+            seriesC.append(strain, Mat.concreteStress(strain))
+            seriesR.append(strain, Mat.reinforcementStress(strain))
+        
+        # Setup chart area
+        self.chartC = QtCharts.QtCharts.QChart()
+        self.chartC.addSeries(seriesC)
+        self.chartC.createDefaultAxes()
+        self.chartC.setTitle('Concrete')
+        self.chartC.legend().hide()
+        self.chartC.setMargins(QtCore.QMargins(0, 0, 0, 0))
+        self.chartC.setGeometry(self.graphicsViewConcrete.frameRect())
+        self.chartC.setBackgroundRoundness(0)
+
+        self.chartR = QtCharts.QtCharts.QChart()
+        self.chartR.addSeries(seriesR)
+        self.chartR.createDefaultAxes()
+        self.chartR.setTitle('Reinforcement')
+        self.chartR.legend().hide()
+        self.chartR.setMargins(QtCore.QMargins(0, 0, 0, 0))
+        self.chartR.setGeometry(self.graphicsViewReinforcement.frameRect())
+        self.chartR.setBackgroundRoundness(0)
+        
+        # Setup view
+        viewC = self.graphicsViewConcrete        # define view from gui widget
+        viewR = self.graphicsViewReinforcement        # define view from gui widget
+        chartViewC = QtCharts.QtCharts.QChartView(self.chartC, viewC) # turn graphicsView object into a chartView object
+        chartViewR = QtCharts.QtCharts.QChartView(self.chartR, viewR) # turn graphicsView object into a chartView object
+        chartViewC.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.white))
+        chartViewR.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.white))
+        chartViewC.setRenderHint(QtGui.QPainter.Antialiasing)
+        chartViewR.setRenderHint(QtGui.QPainter.Antialiasing)
+        chartViewC.show() # cannot get the chart to fit without this
+        chartViewR.show() # cannot get the chart to fit without this
+        #chartView.fitInView(self.chart.Geometry(), QtCore.Qt.KeepAspectRatio)
+
+    def resizeEvent(self, event):
+        #self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
+        #self.graphicsViewConcrete.resize(??)
+        self.material_plot()
 
     def result_plot(self, Res):
         # unpack results dictionary

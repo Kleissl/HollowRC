@@ -54,6 +54,6 @@ class Results:
 # For when this script is excetuted on its own
 if __name__ == '__main__':
 
-    Res = Results()
+    Res = Results(0, 0, 0)
     print(Res)
 

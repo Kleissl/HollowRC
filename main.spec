@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\kekl\\Dropbox\\Python\\HollowRC'],
+             pathex=['C:\\Users\\kenne\\Dropbox\\Python\\HollowRC'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -13,14 +13,17 @@ a = Analysis(['main.py'],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
-             cipher=block_cipher)
+             cipher=block_cipher,
+             noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          [],
           exclude_binaries=True,
           name='main',
           debug=False,
+          bootloader_ignore_signals=False,
           strip=False,
           upx=True,
           console=True )

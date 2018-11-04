@@ -208,7 +208,7 @@ def planeSection(section, SF, Mat):
 
     # Initiate Results class
     Res = Results.Results(dist['x'], dist['y'], dist['wallAngle'])
-    Res.add_plot(dist['strain'], 'M+N strain', '', 0.15)
+    Res.add_plot(dist['strain']*100, 'M+N strain', '%', 0.15)
     Res.add_plot(dist['concrete_stress'], 'M+N concrete stress', 'MPa', 0.1)
     Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
     Res.add_plot(dist['normal_flow'], 'Normal flow', 'kN/m', 0.17)
@@ -456,7 +456,7 @@ def dualSection(section, SF, Mat):
 
     # Initiate Results class
     Res = Results.Results(dist['x'], dist['y'], dist['wallAngle'])
-    Res.add_plot(dist['strain']*10**3, 'M+N strain', '', 0.15)
+    Res.add_plot(dist['strain']*100, 'M+N strain', '%', 0.15)
     Res.add_plot(dist['concrete_stress'], 'M+N concrete stress', 'MPa', 0.1)
     Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
     Res.add_plot(dist['normal_flow'], 'Normal flow', 'kN/m', 0.17)

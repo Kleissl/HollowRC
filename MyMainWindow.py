@@ -38,7 +38,6 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         self.exitAct.triggered.connect(self.exit_app)
         self.saveAct.triggered.connect(self.not_yet_implemented_popup)
         self.openAct.triggered.connect(self.not_yet_implemented_popup)
-        self.plot_updateButton.clicked.connect(self.geometry_plot)
         self.addRowButton.clicked.connect(self.add_row)
         self.removeRowButton.clicked.connect(self.remove_row)
         self.moveUpRowButton.clicked.connect(self.move_row_up)
@@ -46,13 +45,21 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         self.pushButton_analyse.clicked.connect(self.initiate_analysis)
         # self.pushButton_calcSLS.clicked.connect(self.calculateSLS)
         # self.pushButton_calcULS.clicked.connect(self.calculateULS)
+        self.Res = None
 
         # Signal triggers
         self.coordinates_tableWidget.itemChanged.connect(self.geometry_plot)
         self.tabWidget.currentChanged.connect(self.tab_changed)
         for j in range(10):  # update result plot if plot checkbox is changed
             check_box = getattr(self, 'checkBox_plot' + str(j+1))
-            check_box.stateChanged.connect(self.updatePlot)
+            check_box.stateChanged.connect(self.refresh_plots)
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
+        for string in obj_list:
+            obj = getattr(self, 'lineEdit_' + string)   # e.g. obj = self.lineEdit_f_ck
+            obj.textChanged.connect(self.material_plot)
+        self.comboBox_nu.currentIndexChanged.connect(self.material_plot)
+        self.comboBox_concrete.currentIndexChanged.connect(self.material_plot)
+        self.comboBox_reinf.currentIndexChanged.connect(self.material_plot)
         # analysis checkboxes interaction
         self.checkBox_analSLS_1.toggled.connect(
             lambda checked: checked and self.checkBox_analULS_1.setChecked(False))
@@ -65,7 +72,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # Adjust window size, location and title
         # self.resize(320, 240)
         self.center()
-        # self.setWindowTitle('Hollow section analysis tool')  # overwrites the title from Qt Designer
+        self.setWindowTitle('HollowRC section analysis tool')  # overwrites the title from Qt Designer
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Ready')
 
@@ -94,27 +101,6 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # make sure to start at first tab (overrules Qt designer)
         self.tabWidget.setCurrentIndex(0)
 
-        # initiate first plots
-        #self.scene = QtWidgets.QGraphicsScene()  # creates a scene?
-        self.geometry_plot()  # fit to view don't work properly when initiated in this way
-        # Geometry = self.getGeometry()
-        # self.result_plot(Results.Results(Geometry['X'], Geometry['Y'], []))
-
-        # here you can properties of your graph widget.... for example:
-
-        # self.graphicsView_concrete.setTitle('My Graph')
-        # self.graphicsView_concrete.setLabel('bottom', 'X axis')
-        # self.graphicsView_concrete.setLabel('left', 'Y axis')
-        # # plotexample()
-        # import numpy as np
-        # x = np.random.normal(size=1000)
-        # y = np.random.normal(size=1000)
-        # pg.plot(x, y, pen=None, symbol='o')  ## setting pen=None disables line drawing
-
-        # self.dataplot = self.graphicsView_concrete.addPlot(title="My Data")
-        # # L = [1,2,3,4,5]
-        # # self.dataplot.plot(L)
-
     def tab_changed(self):
         if self.checkBox_analSLS_1.isChecked():
             self.pushButton_analyse.setText('Analyse SLS')
@@ -122,7 +108,28 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             self.pushButton_analyse.setText('Analyse ULS')
         else:
             self.pushButton_analyse.setText('Analyse')
-        self.material_plot()
+        self.refresh_plots()
+
+    def resizeEvent(self, event):
+        self.refresh_plots()
+
+    def refresh_plots(self):
+        #self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
+        #self.graphicsViewConcrete.resize(??)
+        if self.tabWidget.currentIndex() == 1:
+            self.geometry_plot()
+        elif self.tabWidget.currentIndex() == 2:
+            self.material_plot()
+        elif self.tabWidget.currentIndex() == 3:
+            # update result plot
+            try:
+                self.scene.clear()  # clearing the plot if there's no results or latest analysis failed
+            except:
+                None
+            try:
+                self.result_plot(self.Res)
+            except:
+                None
 
     def not_yet_implemented_popup(self):
         msg_string = 'This feature has not yet men implemented'
@@ -147,7 +154,6 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # msg.setDetailedText("The details are as follows: ")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         retval = msg.exec_()
-
 
     # a = QtWidgets.QMessageBox.critical(None, 'Error!', "Error Message!", QtWidgets.QMessageBox.Abort)
     # QtCore.qFatal('')
@@ -191,14 +197,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             self.load_fac_label.setText('No load-factor currently applied')
 
         # update result plot
-        self.updatePlot()
-
-    def updatePlot(self):
-        # update result plot
-        if self.Res:
-            self.result_plot(self.Res)
-        else:
-            self.scene.clear()  # clearing the plot if there's no results
+        self.refresh_plots()
 
     def toggle_menu(self, state):
         if state:
@@ -300,7 +299,8 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                 setattr(Mat, string, value)  # Send input value to class
             except ValueError:
                 value = getattr(Mat, string)   # Get default value from class
-                obj.setText(value.str())     # Replace bad item content
+                #obj.setText(value.str())     # Replace bad item content
+                obj.setText(str(value))     # Replace bad item content
         Mat.update_strengths()
         return Mat
 
@@ -447,24 +447,23 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         chartViewR.show() # cannot get the chart to fit without this
         #chartView.fitInView(self.chart.Geometry(), QtCore.Qt.KeepAspectRatio)
 
-    def resizeEvent(self, event):
-        #self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
-        #self.graphicsViewConcrete.resize(??)
-        self.material_plot()
-
     def result_plot(self, Res):
-        # unpack results dictionary
-        x = Res.x
-        y = Res.y
-        wallAngle = Res.wallAngle
-        # print(wallAngle)
-
         # setup graphics scene
         view = self.graphicsViewResults        # define view from gui widget
         # self.scene = MyGraphicsScene()     # creates a scene?
         # self.scene.clear()
         self.scene = QtWidgets.QGraphicsScene()  # creates a scene?
         view.setScene(self.scene)                   # set the created scene
+
+        if not self.Res:
+            self.scene.clear()  # clearing the plot if there's no results or latest analysis failed
+            return
+        
+        # unpack results dictionary
+        x = Res.x
+        y = Res.y
+        wallAngle = Res.wallAngle
+        # print(wallAngle)
 
         # self.scene.mousePressEvent = self.onSceneClick
         # self.scene.selectionChanged = self.selectedItem
@@ -545,7 +544,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         view = self.graphicsViewGeometry       # define view from gui widget
         scene = QtWidgets.QGraphicsScene()     # creates a scene?
         view.setScene(scene)                   # set the created scene
-        # self.scene.clear()  # Clear
+        # scene.clear()  # Clear
         # view.scene().disconnect()
         # view.scene().clear()                 # clear scene
         # view.close()
@@ -683,10 +682,6 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # https://stackoverflow.com/questions/44718779/embeding-plot-into-graphicsview-in-pyqt5
 
         # self.statusbar.showMessage('plot updated')
-
-        # self.graphicsView = pg.PlotWidget(self.centralwidget)
-        # L = [1, 2, 3, 4, 5]
-        # self.graphicsView.plot(L)
 
     def exit_app(self):  # not executed if user exit by clicking on upper right cross
         # root.destroy()  # destroy all windows (parent, child) within the root instance

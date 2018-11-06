@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'design.ui',
 # licensing of 'design.ui' applies.
 #
-# Created: Sun Nov  4 22:19:25 2018
+# Created: Tue Nov  6 21:55:00 2018
 #      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -245,12 +245,6 @@ class Ui_MainWindow(object):
         self.graphicsViewGeometry.setLineWidth(1)
         self.graphicsViewGeometry.setObjectName("graphicsViewGeometry")
         self.horizontalLayout_9.addWidget(self.graphicsViewGeometry)
-        self.plot_updateButton = QtWidgets.QPushButton(self.tab_geometry)
-        font = QtGui.QFont()
-        font.setPointSize(9)
-        self.plot_updateButton.setFont(font)
-        self.plot_updateButton.setObjectName("plot_updateButton")
-        self.horizontalLayout_9.addWidget(self.plot_updateButton)
         self.verticalLayout_4.addLayout(self.horizontalLayout_9)
         self.gridLayout.addLayout(self.verticalLayout_4, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_geometry, "")
@@ -721,7 +715,7 @@ class Ui_MainWindow(object):
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -778,8 +772,7 @@ class Ui_MainWindow(object):
         self.removeRowButton.setText(QtWidgets.QApplication.translate("MainWindow", "remove", None, -1))
         self.moveUpRowButton.setText(QtWidgets.QApplication.translate("MainWindow", "move up", None, -1))
         self.moveDownRowButton.setText(QtWidgets.QApplication.translate("MainWindow", "move down", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Plot geometry here:", None, -1))
-        self.plot_updateButton.setText(QtWidgets.QApplication.translate("MainWindow", "Update plot", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Cross-section geometry:", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_geometry), QtWidgets.QApplication.translate("MainWindow", "Geometry", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("MainWindow", "Material properties:", None, -1))
         self.label_17.setText(QtWidgets.QApplication.translate("MainWindow", "MPa", None, -1))

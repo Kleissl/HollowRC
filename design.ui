@@ -572,7 +572,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Plot geometry here:</string>
+               <string>Cross-section geometry:</string>
               </property>
              </widget>
             </item>
@@ -585,18 +585,6 @@
                 </property>
                 <property name="lineWidth">
                  <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="plot_updateButton">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Update plot</string>
                 </property>
                </widget>
               </item>

@@ -27,17 +27,19 @@ import SectionForces
 import Material
 import Results
 import Geometry
-
+#import TableInterface
+import pickle
 
 class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compatible
     def __init__(self):
         super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
         self.setupUi(self)  # setup layout and widgets defined in design.py by Qt Designer
+        #self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
 
         # Connect interactive elements such as actions and buttons with a custom function
         self.exitAct.triggered.connect(self.exit_app)
-        self.saveAct.triggered.connect(self.not_yet_implemented_popup)
-        self.openAct.triggered.connect(self.not_yet_implemented_popup)
+        self.saveAct.triggered.connect(self.save_file)
+        self.openAct.triggered.connect(self.load_file)
         self.addRowButton.clicked.connect(self.add_row)
         self.removeRowButton.clicked.connect(self.remove_row)
         self.moveUpRowButton.clicked.connect(self.move_row_up)
@@ -134,6 +136,42 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
     def not_yet_implemented_popup(self):
         msg_string = 'This feature has not yet men implemented'
         self.show_msg_box(msg_string)
+
+    def save_file(self):
+        try:    # try to save file 
+            openfile = QtWidgets.QFileDialog.getSaveFileName(filter='*.pkj')  # save file dialog
+            filename = openfile[0]
+            # Load input objects from GUI
+            section = self.getGeometry()
+            SF = self.getSF()
+            Mat = self.getMaterial()
+            # open file for writing
+            with open(filename, 'wb') as f:
+                pickle.dump([section, SF, Mat], f) # dump objevts to file
+            print('file saved')
+        except FileNotFoundError:
+            pass  # do nothing when user press cancel
+        except Exception as e:
+            print(e)
+            self.show_msg_box('Failed to save file')
+
+    def load_file(self):
+        try:    # try to open file 
+            openfile = QtWidgets.QFileDialog.getOpenFileName(filter='*.pkj')  # Open file dialog
+            filename = openfile[0]
+            # open file for reading
+            with open(filename, 'rb') as f:
+                section, SF, Mat = pickle.load(f) # Getting back the objects
+            #  insert variables in GUI
+            self.setGeometry(section)
+            self.setSF(SF)
+            self.setMaterial(Mat)
+            print('file opened')
+        except FileNotFoundError:
+            pass  # do nothing when user press cancel
+        except Exception as e:
+            print(e)
+            self.show_msg_box('Failed to open file')
 
     def show_msg_box(self, info_str):
         msg = QtWidgets.QMessageBox()
@@ -287,13 +325,11 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         Mat.reinf_method = self.comboBox_reinf.currentText()
         # Mat.nu_method = self.comboBox_nu.currentText()
 
-        # text = self.comboBox_reinfSLS.itemText()  # Retrieve text from input cell
-
         # getting the ext inputs or overwriting bad content     <-- OVERWRITES SHOULD HAPPEN ON CHANGED-SIGNAL
         obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
         for string in obj_list:
             # obj = self.lineEdit_f_ck
-            obj = getattr(self, 'lineEdit_' + string)
+            obj = getattr(self, 'lineEdit_' + string)   # e.g.: obj = self.lineEdit_f_ck
             try:
                 value = float(obj.text())   # convert item text to float
                 setattr(Mat, string, value)  # Send input value to class
@@ -304,11 +340,25 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         Mat.update_strengths()
         return Mat
 
+    def setMaterial(self, Mat):
+        # set combobox selections
+        self.comboBox_concrete.setEditText(Mat.conc_method)
+        self.comboBox_reinf.setEditText(Mat.reinf_method)
+        # Mat.nu_method
+
+        # set the ext inputs
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
+        for string in obj_list:
+            obj = getattr(self, 'lineEdit_' + string)   # e.g.: obj = self.lineEdit_f_ck
+            value = getattr(Mat, string)   # Get value from class
+            obj.setText(str(value))     # Replace text in lineEdit item
+        # Mat.update_strengths()
+
     def getGeometry(self):
         X, Y, T, rho_long, rho_trans = [], [], [], [], []           # initiate lists
-        row_count = self.coordinates_tableWidget.rowCount()         # get number of rows
+        table = self.coordinates_tableWidget
+        row_count = table.rowCount()         # get number of rows
         for row in range(row_count):
-            table = self.coordinates_tableWidget
             row_values = self.get_table_row(table, row)
             X.append(row_values[0])
             Y.append(row_values[1])
@@ -344,6 +394,28 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # return Geometry
         return section
 
+    def setGeometry(self, section):
+        table = self.coordinates_tableWidget
+        table.blockSignals(True)
+        # delete all rows
+        row_count =table.rowCount()
+        for rows in range(row_count):
+            table.removeRow(0)
+        # add new rows
+        for wall in section.walls:
+            row_count = table.rowCount()         # get number of rows
+            table.insertRow(row_count)           # insert new row at the end
+            # insert items
+            X, Y, T, rho_long, rho_trans = wall.X[0], wall.Y[0], wall.thick, wall.rho_long, wall.rho_trans
+            #for col in range(col_count):  # loop over columns
+            for col, value in enumerate([X, Y, T, rho_long, rho_trans]):
+                table.setItem(row_count, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
+        table.blockSignals(False)
+
+        obj = self.lineEdit_wallNodeN   
+        value = wall.wallNodeN          # get value from last wall instance
+        obj.setText(str(value))         # Replace bad item content
+
     def getSF(self):
         table = self.SectionForces_tableWidget
         row_values = self.get_table_row(table, 0)
@@ -356,6 +428,14 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # print("Section forces table data loaded")
         self.statusbar.showMessage('Section forces table data loaded')
         return SF
+
+    def setSF(self, SF):
+        table = self.SectionForces_tableWidget
+        table.removeRow(0)                      # are lossing the row name 'LC' to the left!!!!
+        table.insertRow(0)
+        N, Mx, My, Vx, Vy, T = SF.N, SF.Mx, SF.My, SF.Vx, SF.Vy, SF.T
+        for col, value in enumerate([N, Mx, My, Vx, Vy, T]):
+                table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
 
     def get_table_row(self, table, row):
         col_count = table.columnCount()                         # get number of columns
@@ -533,12 +613,20 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # Load geometry data
         section = self.getGeometry()
 
-        # unpack geometry properties
-        X = section.get_X()
-        Y = section.get_Y()
-        T = section.get_thick()
-        centreX, centreY = section.get_centre()
-        wallAngle = section.get_angle()
+        try:
+            # unpack geometry properties
+            X = section.get_X()
+            Y = section.get_Y()
+            T = section.get_thick()
+            centreX, centreY = section.get_centre()
+            wallAngle = section.get_angle()
+        except:
+            print('Cannot print geometry')
+            view = self.graphicsViewGeometry       # define view from gui widget
+            scene = QtWidgets.QGraphicsScene()     # creates a scene?
+            view.setScene(scene)                   # set the created scene
+            scene.clear()                          # Clear scene
+            return
 
         # setup graphics scene
         view = self.graphicsViewGeometry       # define view from gui widget

@@ -54,7 +54,7 @@ class SectionForces:
     def set_load_factor(self, fac):
         self.load_factor = fac
 
-    def print(self):
+    def print_str(self):
         string = 'N=' + str(self.N) + ', Mx=' + str(self.Mx) + ', My=' + str(self.My) \
                  + ', Vx=' + str(self.Vx) + ', Vy=' + str(self.Vy) + ', T=' + str(self.T)
         return string

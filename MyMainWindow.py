@@ -36,7 +36,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         self.setupUi(self)  # setup layout and widgets defined in design.py by Qt Designer
         #self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
 
-        # Connect interactive elements such as actions and buttons with a custom function
+        # --- Triggers --- (interactive elements such as actions and buttons with a custom function)
         self.exitAct.triggered.connect(self.exit_app)
         self.saveAct.triggered.connect(self.save_file)
         self.openAct.triggered.connect(self.load_file)
@@ -49,7 +49,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # self.pushButton_calcULS.clicked.connect(self.calculateULS)
         self.Res = None
 
-        # Signal triggers
+        # --- Signals --- (e,g, change signals from check box state, drop down selection and editable values)
         self.coordinates_tableWidget.itemChanged.connect(self.geometry_plot)
         self.tabWidget.currentChanged.connect(self.tab_changed)
         for j in range(10):  # update result plot if plot checkbox is changed
@@ -68,23 +68,22 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         self.checkBox_analULS_1.toggled.connect(
             lambda checked: checked and self.checkBox_analSLS_1.setChecked(False))
 
+        # --- Events ---
         # self.graphicsViewResults.mouseMoveEvent = self.hoverShow
         # self.graphicsViewResults.mousePressEvent = self.onClick
 
-        # Adjust window size, location and title
-        # self.resize(320, 240)
+        # App window size, location and title
         self.center()
         self.setWindowTitle('HollowRC section analysis tool')  # overwrites the title from Qt Designer
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Ready')
 
+        # App menu and status line
         viewMenu = self.menuBar().addMenu('View')
-
         viewStatusAct = QtWidgets.QAction('View statusbar', self)
         viewStatusAct.setCheckable(True)
         viewStatusAct.setChecked(True)
         viewStatusAct.triggered.connect(self.toggle_menu)
-
         viewMenu.addAction(viewStatusAct)
 
         #  Correcting QT Designer bug sometimes making table headers invisible
@@ -103,7 +102,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # make sure to start at first tab (overrules Qt designer)
         self.tabWidget.setCurrentIndex(0)
 
-    def tab_changed(self):
+    def tab_changed(self): # signal function
         if self.checkBox_analSLS_1.isChecked():
             self.pushButton_analyse.setText('Analyse SLS')
         elif self.checkBox_analULS_1.isChecked():
@@ -112,10 +111,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             self.pushButton_analyse.setText('Analyse')
         self.refresh_plots()
 
-    def resizeEvent(self, event):
-        self.refresh_plots()
-
-    def refresh_plots(self):
+    def refresh_plots(self): # signal/normal function
         #self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
         #self.graphicsViewConcrete.resize(??)
         if self.tabWidget.currentIndex() == 1:
@@ -209,7 +205,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         Mat = self.getMaterial()
 
         # print(Geometry)
-        print('SF: ' + SF.print())
+        print('SF: ' + SF.print_str())
 
         # Call analysis
         if self.checkBox_analSLS_1.isChecked():
@@ -449,40 +445,133 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                 row_values.append(0.0)                          # Add zero to list
         return row_values
 
-    # def onSceneClick(self, event):
-    #     x = event.scenePos().x()
-    #     y = event.scenePos().y()
-    #     print('press event (x,y) = ({}, {})'.format(x, y))
-    #     # view = self.graphicsViewResults
-    #     # print('view rect ', view.rect())
-    #     # print('view-scene rect ', view.sceneRect())
-    #     # print('scene panel rect ', self.scene.mousePressEvent())
-    #     items = self.scene.items(event.scenePos())
-    #     print(items)
-    #     # for item in items:
-    #         # item.is
+    def geometry_plot(self):
+        # Load geometry data
+        section = self.getGeometry()
 
-    def onItemClick(self, event):
-        # x = event.scenePos().x()
-        # y = event.scenePos().y()
-        # print('Item press event (x,y) = ({}, {})'.format(x, y))
-        # print('data string: ', data_str)
-        # view = self.graphicsViewResults
-        # print('view rect ', view.rect())
-        # print('view-scene rect ', view.sceneRect())
-        # print('scene panel rect ', self.scene.mousePressEvent())
-        items = self.scene.items(event.scenePos())
-        msg = 'Point data: '
-        for item in items:
-            if hasattr(item, 'data_str'):
-                msg += "{}, ".format(item.data_str)
-        if len(msg) > 13:
-            self.statusbar.showMessage(msg[:-2])
-            print(msg[:-2])
+        try:
+            # unpack geometry properties
+            X = section.get_X()
+            Y = section.get_Y()
+            T = section.get_thick()
+            centreX, centreY = section.get_centre()
+            wallAngle = section.get_angle()
+        except:
+            print('Cannot print geometry')
+            view = self.graphicsViewGeometry       # define view from gui widget
+            scene = QtWidgets.QGraphicsScene()     # creates a scene?
+            view.setScene(scene)                   # set the created scene
+            scene.clear()                          # Clear scene
+            return
 
-    # def selectedItem(self):
-    #     print('selection changed')
-    #     print(self.scene.selectedItems())
+        # setup graphics scene
+        view = self.graphicsViewGeometry       # define view from gui widget
+        scene = QtWidgets.QGraphicsScene()     # creates a scene?
+        view.setScene(scene)                   # set the created scene
+        # scene.clear()  # Clear
+        # view.scene().disconnect()
+        # view.scene().clear()                 # clear scene
+        # view.close()
+
+        # Styles
+        bold_pencil = QtGui.QPen(QtCore.Qt.DashLine)
+        bold_pencil.setColor(QtCore.Qt.black)
+        bold_pencil.setWidth(10)
+        no_pencil = QtGui.QPen(QtCore.Qt.NoPen)
+        thin_pencil = QtGui.QPen(QtCore.Qt.black)  # create a black pen
+        blue_fill = QtGui.QBrush(QtCore.Qt.blue)   # create a blue brush
+        grey_fill = QtGui.QBrush(QtCore.Qt.lightGray)  # create a light gray brush
+
+        font = QtGui.QFont()
+        font.setPixelSize(120)
+        font.setBold(False)
+        font.setFamily("Calibri")
+
+        # Initiate item lists
+        shade_rects = []
+        centre_lines = []
+        node_circles = []
+        node_rects = []
+        node_texts = []
+
+        # Loop over geometry nodes to preb. for geometry plots
+        for i in range(len(X)):
+            X1, Y1 = X[i], Y[i]  # start node
+            if i + 1 == len(X):  # if last node
+                X2, Y2 = X[0], Y[0]  # end node
+            else:
+                X2, Y2 = X[i + 1], Y[i + 1]
+
+            # prep. shaded geometry Periphery
+            PX1 = X1 + T[i] / 2 * math.sin(-wallAngle[i])
+            PY1 = Y1 + T[i] / 2 * math.cos(-wallAngle[i])
+            PX2 = X1 - T[i] / 2 * math.sin(-wallAngle[i])
+            PY2 = Y1 - T[i] / 2 * math.cos(-wallAngle[i])
+            PX3 = X2 - T[i] / 2 * math.sin(-wallAngle[i])
+            PY3 = Y2 - T[i] / 2 * math.cos(-wallAngle[i])
+            PX4 = X2 + T[i] / 2 * math.sin(-wallAngle[i])
+            PY4 = Y2 + T[i] / 2 * math.cos(-wallAngle[i])
+            rect = QtGui.QPolygonF()
+            rect.append(QtCore.QPointF(PX1, -PY1))
+            rect.append(QtCore.QPointF(PX2, -PY2))
+            rect.append(QtCore.QPointF(PX3, -PY3))
+            rect.append(QtCore.QPointF(PX4, -PY4))
+            shade_rects.append(rect)
+
+            # # add outline on top
+            # scene.addLine(QtCore.QLineF(PX1, -PY1, PX2, -PY2), thin_pencil)
+            # scene.addLine(QtCore.QLineF(PX2, -PY2, PX3, -PY3), thin_pencil)
+            # scene.addLine(QtCore.QLineF(PX3, -PY3, PX4, -PY4), thin_pencil)
+            # scene.addLine(QtCore.QLineF(PX4, -PY4, PX1, -PY1), thin_pencil)
+
+            # prep. centre line
+            line = QtCore.QLineF(X1, -Y1, X2, -Y2)  # x pos. right, y pos. down
+            centre_lines.append(line)
+
+            # preb. node circles
+            radi = 0.01 * max([max(X)-min(X), max(Y)-min(Y)])  # radius of node circles
+            circle = QtWidgets.QGraphicsEllipseItem(X1 - radi, -(Y1 + radi), radi * 2.0, radi * 2.0)
+            circle.setPen(thin_pencil)
+            circle.setBrush(blue_fill)
+            #circle.setAcceptDrops(True)
+            #circle.dragMoveEvent = self.onItemDrag
+            #circle.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
+            node_circles.append(circle)
+
+            # preb. node texts
+            point = QtCore.QPointF(X1, -Y1)
+            text = QtWidgets.QGraphicsTextItem()
+            text.setPos(point)
+            text.setPlainText("Node "+str(i+1))
+            text.setFont(font)
+            node_texts.append(text)
+
+        # plot the shaded rectangles
+        for rect in shade_rects:
+            scene.addPolygon(rect, pen=no_pencil, brush=grey_fill)
+
+        # plot centre lines
+        for line in centre_lines:
+            scene.addLine(line, bold_pencil)
+        
+        # plot node circles
+        for circle in node_circles:
+            scene.addItem(circle)
+
+        # plot node texts
+        for text in node_texts:
+            scene.addItem(text)
+
+        # plot centre text
+        point = QtCore.QPointF(centreX, -centreY)
+        text = QtWidgets.QGraphicsTextItem()
+        text.setPlainText("CG")
+        text.setFont(font)
+        text.setPos(point)
+        scene.addItem(text)
+
+        # fit view to make sure that QGraphics view have no scrollbars
+        view.fitInView(scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def material_plot(self):
         # Load material data
@@ -598,183 +687,64 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                     line_item.setAcceptHoverEvents(True)
                     line_item.mousePressEvent = self.onItemClick
                     # line_item.mouseMoveEvent = self.onItemClick
-                    # line_item.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
                     # self.scene.addLine(line, pencil)
                     self.scene.addItem(line_item)
                 self.scene.addPolygon(rect, pen=pencil)
 
+        # Hide the remaining unneeded check boxes
         for j in range(Res.plot_count, 10):
             check_box = getattr(self, 'checkBox_plot' + str(j + 1))
             check_box.setVisible(False)
 
+        # Fit plottet items in view
         view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
-    def geometry_plot(self):
-        # Load geometry data
-        section = self.getGeometry()
-
-        try:
-            # unpack geometry properties
-            X = section.get_X()
-            Y = section.get_Y()
-            T = section.get_thick()
-            centreX, centreY = section.get_centre()
-            wallAngle = section.get_angle()
-        except:
-            print('Cannot print geometry')
-            view = self.graphicsViewGeometry       # define view from gui widget
-            scene = QtWidgets.QGraphicsScene()     # creates a scene?
-            view.setScene(scene)                   # set the created scene
-            scene.clear()                          # Clear scene
-            return
-
-        # setup graphics scene
-        view = self.graphicsViewGeometry       # define view from gui widget
-        scene = QtWidgets.QGraphicsScene()     # creates a scene?
-        view.setScene(scene)                   # set the created scene
-        # scene.clear()  # Clear
-        # view.scene().disconnect()
-        # view.scene().clear()                 # clear scene
-        # view.close()
-
-        # Styles
-        bold_pencil = QtGui.QPen(QtCore.Qt.DashLine)
-        bold_pencil.setColor(QtCore.Qt.black)
-        bold_pencil.setWidth(10)
-        no_pencil = QtGui.QPen(QtCore.Qt.NoPen)
-        thin_pencil = QtGui.QPen(QtCore.Qt.black)  # create a black pen
-        blue_fill = QtGui.QBrush(QtCore.Qt.blue)   # create a blue brush
-        grey_fill = QtGui.QBrush(QtCore.Qt.lightGray)  # create a light gray brush
-
-        font = QtGui.QFont()
-        font.setPixelSize(100)
-        font.setBold(False)
-        font.setFamily("Calibri")
-
-        # viewQRect = view.viewport().rect()     # get view rectangle
-        # viewRect = QtCore.QRectF(viewQRect)
-        # print(viewQRect)
-        # print(viewRect)
-        # self.setSceneRect(QtCore.QRectF(self.viewport().rect()))
-
-        # Loop over geometry nodes to plot the geometry
-        for i in range(len(X)):
-            X1, Y1 = X[i], Y[i]  # start node
-            if i + 1 == len(X):  # if last node
-                X2, Y2 = X[0], Y[0]  # end node
-            else:
-                X2, Y2 = X[i + 1], Y[i + 1]
-
-            # Plot shaded geometry Periphery
-            PX1 = X1 + T[i] / 2 * math.sin(-wallAngle[i])
-            PY1 = Y1 + T[i] / 2 * math.cos(-wallAngle[i])
-            # print("PX1, PY1 =", PX1, PY1)
-            PX2 = X1 - T[i] / 2 * math.sin(-wallAngle[i])
-            PY2 = Y1 - T[i] / 2 * math.cos(-wallAngle[i])
-            # print("PX2, PY2 =", PX2, PY2)
-            PX3 = X2 - T[i] / 2 * math.sin(-wallAngle[i])
-            PY3 = Y2 - T[i] / 2 * math.cos(-wallAngle[i])
-            # print("PX3, PY3 =", PX3, PY3)
-            PX4 = X2 + T[i] / 2 * math.sin(-wallAngle[i])
-            PY4 = Y2 + T[i] / 2 * math.cos(-wallAngle[i])
-            # print("PX4, PY4 =", PX4, PY4)
-
-            rect = QtGui.QPolygonF()
-            rect.append(QtCore.QPointF(PX1, -PY1))
-            rect.append(QtCore.QPointF(PX2, -PY2))
-            rect.append(QtCore.QPointF(PX3, -PY3))
-            rect.append(QtCore.QPointF(PX4, -PY4))
-            scene.addPolygon(rect, pen=no_pencil, brush=grey_fill)
-
-            # # add outline on top
-            # scene.addLine(QtCore.QLineF(PX1, -PY1, PX2, -PY2), thin_pencil)
-            # scene.addLine(QtCore.QLineF(PX2, -PY2, PX3, -PY3), thin_pencil)
-            # scene.addLine(QtCore.QLineF(PX3, -PY3, PX4, -PY4), thin_pencil)
-            # scene.addLine(QtCore.QLineF(PX4, -PY4, PX1, -PY1), thin_pencil)
-
-            # plot centre line
-            line = QtCore.QLineF(X1, -Y1, X2, -Y2)  # x pos. right, y pos. down
-            scene.addLine(line, bold_pencil)
-            # print("line from (x0,y0)=(", x0, ", ", y0, ") too (x1,y1)=(", x1, ", ", y1, ") plottet")
-
-            # plot nodes (circles)
-            radi = 25  # radius of node circles        <-- make relative!
-            scene.addEllipse(X1 - radi, -(Y1 + radi), radi * 2.0, radi * 2.0, thin_pencil, blue_fill)
-            # print("node at (x,y)=(", x, ", ", y, ") plottet")
-
-            # plot node text
-            point = QtCore.QPointF(X1, -Y1)
-            # point = QtCore.QPointF(centreX, -centreY)
-            text = QtWidgets.QGraphicsTextItem()
-            text.setPlainText("node "+str(i+1))
-            text.setFont(font)
-            text.setPos(point)
-            # text.adjustSize()
-            scene.addItem(text)
-
-        # plot centre text
-        point = QtCore.QPointF(centreX, -centreY)
-        text = QtWidgets.QGraphicsTextItem()
-        text.setPlainText("CG")
-        text.setFont(font)
-        text.setPos(point)
-        # text.adjustSize()
-        scene.addItem(text)
-
-        # scene.additem(text)
-        # scene.addText("origo", font=font)
-        # scene.addText(centreX, centreY, font=font, text="test")
-        # scene.addSimpleText("test", point)
-        # text = QtGui.QTextItem()
-        # QtCore.QGraphicsTextItem
-
-        # # Rect
-        # r = QGraphicsRectItem(0, 0, TITLE_WIDTH, LINE_HEIGHT, itemsRect)
-        # r.setPen(QPen(Qt.NoPen))
-        # r.setBrush(QBrush(color))
-        # r.setPos(0, i * LINE_HEIGHT + i * SPACING)
-        # r.setToolTip(references.tooltip(ref))
-        # i += 1
-        #
-        # # Text
-        # name = references.title(ref)
-        # txt = QGraphicsSimpleTextItem(name, r)
-        # txt.setPos(r.boundingRect().center() - txt.boundingRect().center())
-
-        # fit view to make sure that QGraphics view have no scrollbars
-        view.fitInView(scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
-
-        # add starting point at the end
-        # X.append(X[0])
-        # Y.append(Y[0])
-
-        # def resizeEvent(self, event):
-        #     self.scene().setSceneRect(0, 0, event.size().width(), event.size().height())
-        #     self.player.setSize(QSizeF(event.size().width(), event.size().height()))
-        #     self.bar.setGeometry(0, event.size().height() - self.bar.height(), event.size().width(), self.bar.height())
-
-        # def fitInView(self, scale=True):
-        #     rect = QtCore.QRectF(self._photo.pixmap().rect())
-        #     if not rect.isNull():
-        #         self.setSceneRect(rect)
-        #         if self.hasPhoto():
-        #             unity = self.transform().mapRect(QtCore.QRectF(0, 0, 1, 1))
-        #             self.scale(1 / unity.width(), 1 / unity.height())
-        #             viewrect = self.viewport().rect()
-        #             scenerect = self.transform().mapRect(rect)
-        #             factor = min(viewrect.width() / scenerect.width(),
-        #                          viewrect.height() / scenerect.height())
-        #             self.scale(factor, factor)
-        #         self._zoom = 0
-
-        # https://stackoverflow.com/questions/44718779/embeding-plot-into-graphicsview-in-pyqt5
-
-        # self.statusbar.showMessage('plot updated')
+    # def selectedItem(self):
+    #     print('selection changed')
+    #     print(self.scene.selectedItems())
 
     def exit_app(self):  # not executed if user exit by clicking on upper right cross
         # root.destroy()  # destroy all windows (parent, child) within the root instance
         print("Terminated")
         self.close()  # stop the active QApplication instance and sends a QCloseEvent
+
+    def resizeEvent(self, event): # Event
+        self.refresh_plots()
+
+    def onItemDrag(self, event):
+        print('onItemDrag event activated')
+        print(event)
+
+    # def onSceneClick(self, event):
+    #     x = event.scenePos().x()
+    #     y = event.scenePos().y()
+    #     print('press event (x,y) = ({}, {})'.format(x, y))
+    #     # view = self.graphicsViewResults
+    #     # print('view rect ', view.rect())
+    #     # print('view-scene rect ', view.sceneRect())
+    #     # print('scene panel rect ', self.scene.mousePressEvent())
+    #     items = self.scene.items(event.scenePos())
+    #     print(items)
+    #     # for item in items:
+    #         # item.is
+
+    def onItemClick(self, event): # when user clicks on result the values are listed in the status line
+        # x = event.scenePos().x()
+        # y = event.scenePos().y()
+        # print('Item press event (x,y) = ({}, {})'.format(x, y))
+        # print('data string: ', data_str)
+        # view = self.graphicsViewResults
+        # print('view rect ', view.rect())
+        # print('view-scene rect ', view.sceneRect())
+        # print('scene panel rect ', self.scene.mousePressEvent())
+        items = self.scene.items(event.scenePos())
+        msg = 'Point data: '
+        for item in items:
+            if hasattr(item, 'data_str'):
+                msg += "{}, ".format(item.data_str)
+        if len(msg) > 13:
+            self.statusbar.showMessage(msg[:-2])
+            print(msg[:-2])
 
     # def mousePressEvent(self, event):
     #     # pen = QPen(QtCore.Qt.black)
@@ -802,14 +772,11 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-            self.deleteLater()  # Schedules object for deletion (to avoid nonzero exit code)
-            # self.graphicsViewGeometry.deleteLater()  # Schedules object for deletion (to avoid nonzero exit code)
-            # self.graphicsViewResults.deleteLater()  # Schedules object for deletion (to avoid nonzero exit code)
+            self.deleteLater()  # Schedule objects for deletion (to avoid nonzero exit code)
             event.accept()
         else:
             event.ignore()
 
-#
 # # Creating my own GraphicsScene class so I can overwrite its mousePressEvent
 # class MyGraphicsScene(QtWidgets.QGraphicsScene):
 #     def __init__(self, parent=None):
@@ -817,7 +784,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
 #         # super(MyGraphicsScene, self).__init__(parent)
 #         super().__init__()
 #         # self.setSceneRect(-100, -100, 200, 200)
-#
+
 #     def mousePressEvent(self, event):
 #         super().mousePressEvent(event)
 #         print(event.pos())
@@ -833,8 +800,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
 #         # item.setPos(event.scenePos())
 #         # self.addItem(item)
 
-
-# # # Creating my own line item
+# # # Creating my own line item class so I can overwrite its mousePressEvent
 # # line_item = QtWidgets.QGraphicsLineItem(line)
 # class myQGraphicsLineItem(QtWidgets.QGraphicsLineItem):
 #     def __init__(self, parent=None):

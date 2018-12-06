@@ -1,6 +1,11 @@
 # HollowRC
 A Python executable for design of hollow reinforced concrete sections under combined actions
 
+## Installation
+1. Download the latest release from https://github.com/Kleissl/HollowRC/releases/latest
+2. Unzip the distribution package
+3. Execute HollowRC.exe
+
 ## Documentation
 ...
 

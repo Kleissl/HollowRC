@@ -664,22 +664,44 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         section_dim = max(max(y) - min(y), max(x) - min(x))
 
         # self.checkBox_plot1.isVisible()
-        for j in range(Res.plot_count):
-            pencil = QtGui.QPen(colour_list[j])
+        for j in range(Res.plot_count): # looping over the different result distributions
+            pencil = QtGui.QPen(colour_list[j]) # create pen with next colour
+            fill = QtGui.QBrush(colour_list[j]) # create brush with same colour
+            
             pencil.setWidth(10)
             check_box = getattr(self, 'checkBox_plot' + str(j+1))
+            # update checkbox visibility
             if not check_box.isVisible():
                 check_box.setVisible(True)
             check_box.setText(Res.plot_names[j])
+            # plot if checked
             if check_box.isChecked():
                 scale = Res.plot_scale[j] * section_dim / max(1e-12, max(abs(Res.plot_data[j])))
-                rect = QtGui.QPolygonF()
+                rect = QtGui.QPolygonF() # outline polygon
                 for i in range(len(Res.x)):
                     PX = Res.x[i] + scale * Res.plot_data[j][i] * math.sin(-Res.wallAngle[i])
                     PY = Res.y[i] + scale * Res.plot_data[j][i] * math.cos(-Res.wallAngle[i])
                     if Res.x[i] == Res.x[i - 1] and Res.y[i] == Res.y[i - 1]:  # new wall element started
                         rect.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                        # prepare/plot shading
+                        if i>0:
+                            # plot shading
+                            rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                            poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
+                            poly_item.setBrush(fill)
+                            poly_item.setOpacity(0.2)
+                            self.scene.addItem(poly_item)
+                            # self.scene.addPolygon(rect2, brush=fill)
+
+                        rect2 = QtGui.QPolygonF() # shading polygon
+                        rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                        rect2.append(QtCore.QPointF(PX, -PY))
+                    else:
+                        # add point for shading polygon
+                        rect2.append(QtCore.QPointF(PX, -PY))
                     rect.append(QtCore.QPointF(PX, -PY))
+
+                    # prepare line for mouse clicks
                     line = QtCore.QLineF(PX, -PY, Res.x[i], -Res.y[i])  # x pos. right, y pos. down
                     line_item = QtWidgets.QGraphicsLineItem(line)
                     line_item.setPen(pencil)
@@ -689,6 +711,13 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                     # line_item.mouseMoveEvent = self.onItemClick
                     # self.scene.addLine(line, pencil)
                     self.scene.addItem(line_item)
+                # plot shading
+                rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
+                poly_item.setBrush(fill)
+                poly_item.setOpacity(0.2)
+                self.scene.addItem(poly_item)
+                # plot result outline
                 self.scene.addPolygon(rect, pen=pencil)
 
         # Hide the remaining unneeded check boxes

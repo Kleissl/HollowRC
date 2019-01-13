@@ -181,10 +181,13 @@ def planeSection(section, SF, Mat):
         V_wall = sum(ds * H[j_start:j_end])
         # Integrate yield shear flow
         V_yield = sum(ds * np.array(H_yield)[j_start:j_end])
-        scale_factor = V_wall / V_yield
-        print('shear flow in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall, abs(scale_factor) * 100))
+        if V_yield: # only if non-zero. try-except block don't work here as numpy only raises a warning and output nan (no exceptions raised)
+            shear_UR = V_wall / V_yield  # one of these sometimes equals NAN!
+        else: # if the wall shear capacity is zero
+            shear_UR = 1  # set shear_UR to 100%
+        print('shear flow in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall, abs(shear_UR) * 100))
         # replace H with scaled down H_yield
-        H_adjust.extend([scale_factor * H_yield[i] for i in range(j_start, j_end)])
+        H_adjust.extend([shear_UR * H_yield[i] for i in range(j_start, j_end)])
     H = np.array(H_adjust)
 
     # --------------- ULS verification ---------------

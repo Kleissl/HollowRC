@@ -5,12 +5,9 @@ Class definition of an in-plane verification of a concrete disk
 History log:
 Version 0.1 - first working build
 
-Author: Kenneth C. Kleissl (KEKL)
-Last edited: May 2018
+Author: Kenneth C. Kleissl
 """
-
 import math
-
 
 class Verify:
     """

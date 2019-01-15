@@ -5,10 +5,8 @@ Class definition of a container for material properties
 History log:
 Version 0.1 - first working build
 
-Author: Kenneth C. Kleissl (KEKL)
-Last edited: May 2018
+Author: Kenneth C. Kleissl
 """
-
 
 class Results:
     """

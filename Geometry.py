@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Class definition of a container for geometry properties
+Class definitions for geometry properties
 
 History log:
 Version 0.1 - first working build
 
-Author: Kenneth C. Kleissl (KEKL)
-Last edited: May 2018
+Author: Kenneth C. Kleissl
 """
-
 import math
 import numpy as np
 
 
 class CrossSection:
     """
-    A container for material properties by Kenneth C. Kleissl.
+    A container for the cross section properties
 
     Attributes:
         ...
@@ -159,7 +157,7 @@ class CrossSection:
 
 class Wall:
     """
-    A container for material properties by Kenneth C. Kleissl.
+    A container for wall segment/element properties
 
     Attributes:
         ...
@@ -178,6 +176,7 @@ class Wall:
         self.dX = X[1] - X[0]
         self.dY = Y[1] - Y[0]
         self.length = math.sqrt(self.dX**2 + self.dY**2)
+        self.ds = self.length / (self.wallNodeN - 1)
         self.angle = math.atan2(self.dY, self.dX)  # in radians
         self.area = self.length * thick
         self.midX = (X[0] + X[1]) / 2  # wall mid point
@@ -186,6 +185,16 @@ class Wall:
         self.Sy = self.midX * self.area  # 1st moment of area
         self.enclosed_area = 0.5 * (X[0] * Y[1] - X[1] * Y[0]) / 1000000  # enclosed area
 
+    def integrate_dist(self, dist):
+        # # define weights/eff. length for each node
+        # ds_list = [0.5 * self.ds if i in (0, self.wallNodeN - 1) else self.ds for i in range(self.wallNodeN)]
+        # # Integrate distribution
+        # integration = sum(ds_list * np.array(dist))
+        if not self.wallNodeN == len(dist):
+            print('warning: dist to be integrated does not have the expected size!')
+        # Integrate distribution
+        integration = sum([0.5 * self.ds * dist[i] if i in (0, self.wallNodeN - 1) else self.ds * dist[i] for i, value in enumerate(dist)])
+        return integration
 
 # For when this script is excetuted on its own
 if __name__ == '__main__':

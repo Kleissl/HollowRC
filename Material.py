@@ -5,10 +5,8 @@ Class definition of a container for material properties
 History log:
 Version 0.1 - first working build
 
-Author: Kenneth C. Kleissl (KEKL)
-Last edited: May 2018
+Author: Kenneth C. Kleissl
 """
-
 
 class MatProp:
     """
@@ -30,7 +28,7 @@ class MatProp:
     gamma_s = 1.15
     conc_method = 'EN Parabolic-rectangular'
     reinf_method = 'Elastic-plastic'
-    conc_method_options = ['EN Parabolic-rectangular', 'EN Bi-linear', 'EN Nonlinear', 'Linear elastic', 'Elastic-plastic', 'Sudden plastic']
+    conc_method_options = ['EN Parabolic-rectangular', 'EN Bi-linear', 'EN Nonlinear', 'Linear elastic', 'Linear elastic (no ten.)', 'Elastic-plastic', 'Sudden plastic']
     reinf_method_options = ['Elastic-plastic', 'Bi-linear hardening', 'Linear elastic', 'Elastic-plastic (no comp.)']
     # hidden values
     f_ct = 2.5
@@ -124,6 +122,12 @@ class MatProp:
         # check if to overrule with linear elastic behaviour
         if self.conc_method == "Linear elastic":
             ConcreteStress = E_cm * strain
+
+        # check if to overrule with linear elastic (no tens.) behaviour
+        if self.conc_method == "Linear elastic (no ten.)":
+            ConcreteStress = E_cm * strain
+            if ConcreteStress > 0:
+                ConcreteStress = 0
 
         # check if to overrule with elastic-plastic behaviour
         if self.conc_method == "Elastic-plastic":

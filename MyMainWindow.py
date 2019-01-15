@@ -9,10 +9,8 @@ Version 0.1 - first working build based on UI from Qt Designer
 Version 0.2 - moved MainWindow class into separate file
 Version 0.3 - Now compatible with Python3 & PyQt5
 
-Author: Kenneth C. Kleissl (KEKL)
-Last edited: May 2018
+Author: Kenneth C. Kleissl
 """
-
 # Standard library modules
 import math
 
@@ -643,16 +641,19 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         bold_pencil.setWidth(10)
 
         # colour list for plotting pens
-        colour_list = [QtCore.Qt.blue,
+        colour_list = [QtCore.Qt.darkGray,
+                       QtCore.Qt.blue,
                        QtCore.Qt.red,
                        QtCore.Qt.green,
-                       QtCore.Qt.cyan,
-                       QtCore.Qt.darkYellow,
                        QtCore.Qt.darkRed,
                        QtCore.Qt.darkMagenta,
                        QtCore.Qt.darkBlue,
-                       QtCore.Qt.darkGray,
-                       QtCore.Qt.lightGray]
+                       QtCore.Qt.darkCyan,
+                       QtCore.Qt.darkGreen,
+                       QtCore.Qt.darkYellow,  # for some reason the checkbox label goes black with this color
+                       QtCore.Qt.gray,
+                       QtCore.Qt.lightGray,  # too light
+                       QtCore.Qt.cyan]
 
         # plot geometry centre line
         rect = QtGui.QPolygonF()
@@ -674,6 +675,8 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             if not check_box.isVisible():
                 check_box.setVisible(True)
             check_box.setText(Res.plot_names[j])
+            check_box.setStyleSheet("color: " + colour_list[j].name.decode())
+            
             # plot if checked
             if check_box.isChecked():
                 scale = Res.plot_scale[j] * section_dim / max(1e-12, max(abs(Res.plot_data[j])))

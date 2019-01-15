@@ -118,12 +118,16 @@ def planeSection(section, SF, Mat):
     H_yield = []
     i = 0
     for wall in section.walls:  # looping over walls
+        H_yield_temp = []
         for j in range(wall.wallNodeN):  # looping over wall data points
             sigma_x = dist['normal_flow'][i] / wall.thick
             stress = [sigma_x, 0, 0]
             verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
-            H_yield.append(verification.tau_yielding() * wall.thick)
+            H_yield_temp.append(verification.tau_yielding() * wall.thick)
             i += 1  # index counter to be used with continuous dist vectors
+        # print(wall.integrate_dist(H_yield_temp))
+        H_yield.extend(H_yield_temp)
+
     # print('H_yield: ', H_yield)
     lower_bound = [-x for x in H_yield]     # define lower bound list by neative yield shear flow
     lower_bound.append(1e-8)                # add shear load factor to lower bound list
@@ -319,8 +323,8 @@ def myShearConstraints(result, x, grad, section, SF, dist):  # constrain functio
         grad[1, -1] = SF.Vy
         grad[2, -1] = SF.T
 
-    # check gradient matrix by finite-difference
-    # grad2 = finite_difference(x, Geometry, SF, dist)
+    # # check gradient matrix by finite-difference
+    # grad2 = finite_difference(x, section, SF, dist)
     # print('grad shape: ', grad.shape)
     # print('grad2 shape: ', grad2.shape)
     # print('max abs grad diff: ', np.max(np.abs(grad - grad2)))

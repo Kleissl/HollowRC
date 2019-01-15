@@ -10,7 +10,6 @@ Version 0.2 - moved MainWindow class into separate file
 Version 0.3 - Now compatible with Python3 & PyQt5
 
 Author: Kenneth C. Kleissl
-Last edited: May 2018
 """
 # Standard library modules
 import sys  # We need sys so that we can pass argv to QApplication

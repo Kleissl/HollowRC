@@ -16,7 +16,7 @@ import sys  # We need sys so that we can pass argv to QApplication
 # Third-party library modules
 from PySide2 import QtWidgets
 # Local source tree modules
-from MyMainWindow import MyMainWindow  # import the MainWindow class
+from AppWindows import HollowRCWindow  # import the MainWindow class
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)  # PyQT5 compatible
 
     # The QWidget widget is the base class of all user interface objects in PyQt4.
-    window = MyMainWindow()  # We set the form to be our ExampleApp (design)
+    window = HollowRCWindow()  # We set the form to be our ExampleApp (design)
     window.show()  # Show the window/form
 
     # Exception handling

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-MainWindow class for the "Hollow section analysis tool" GUI
-
-Script defining the MainWindow class including functions for any interactive element
+This module containes all the application window classes for the "Hollow section analysis tool" GUI
 
 History log:
 Version 0.1 - first working build based on UI from Qt Designer
@@ -25,14 +23,18 @@ import SectionForces
 import Material
 import Results
 import Geometry
-#import TableInterface
 import pickle
+#import TableInterface
 
-class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compatible
+class HollowRCWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compatible
     def __init__(self):
         super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
         self.setupUi(self)  # setup layout and widgets defined in design.py by Qt Designer
         #self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
+
+        # version tag and label
+        self.tag = 'v1.1'
+        self.label_version.setText(self.tag)
 
         # --- Triggers --- (interactive elements such as actions and buttons with a custom function)
         self.exitAct.triggered.connect(self.exit_app)
@@ -83,6 +85,11 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         viewStatusAct.setChecked(True)
         viewStatusAct.triggered.connect(self.toggle_menu)
         viewMenu.addAction(viewStatusAct)
+        
+        aboutMenu = self.menuBar().addMenu('About')
+        aboutVersionAct = QtWidgets.QAction('Check version', self)
+        aboutVersionAct.triggered.connect(self.version_check)
+        aboutMenu.addAction(aboutVersionAct)
 
         #  Correcting QT Designer bug sometimes making table headers invisible
         self.coordinates_tableWidget.horizontalHeader().setVisible(True)    # show horizontal header in Geometry table
@@ -99,6 +106,9 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
 
         # make sure to start at first tab (overrules Qt designer)
         self.tabWidget.setCurrentIndex(0)
+
+        # check if version is up-to-date
+        # self.version_check()
 
     def tab_changed(self): # signal function
         if self.checkBox_analSLS_1.isChecked():
@@ -126,10 +136,6 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                 self.result_plot(self.Res)
             except:
                 None
-
-    def not_yet_implemented_popup(self):
-        msg_string = 'This feature has not yet men implemented'
-        self.show_msg_box(msg_string)
 
     def save_file(self):
         try:    # try to save file 
@@ -167,21 +173,24 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             print(e)
             self.show_msg_box('Failed to open file')
 
-    def show_msg_box(self, info_str):
+    def show_msg_box(self, msg_str, title="Error Message", set_load_fac_label=False):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
 
-        msg.setWindowTitle("Error Message")
-        if isinstance(info_str, str):
-            msg.setText(info_str)
-            self.load_fac_label.setText(info_str)
-        elif isinstance(info_str, list):
-            msg.setText(info_str[0])
-            print(info_str)
-            self.load_fac_label.setText(info_str[0])
-            if len(info_str) > 1:
-                msg.setInformativeText(info_str[1])
-                self.load_fac_label.setText(info_str[0]+' '+info_str[1])
+        msg.setWindowTitle(title)
+        if isinstance(msg_str, str):
+            msg.setText(msg_str)
+            if set_load_fac_label:
+                self.load_fac_label.setText(msg_str)
+        elif isinstance(msg_str, list):                # if a list
+            msg.setText(msg_str[0])                    # set text in msg box
+            print(msg_str) 
+            if set_load_fac_label:
+                self.load_fac_label.setText(msg_str[0])    # update label
+            if len(msg_str) > 1:
+                msg.setInformativeText(msg_str[1])     # set info text
+                if set_load_fac_label:
+                    self.load_fac_label.setText(msg_str[0] + ' ' + msg_str[1])
 
         # msg.setDetailedText("The details are as follows: ")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -201,6 +210,13 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         section = self.getGeometry()
         SF = self.getSF()
         Mat = self.getMaterial()
+
+        # check if geometry is valid
+        if not section.valid():
+            self.show_msg_box(['Geometry error', 'The defined geometry is not valid'])
+            self.Res = None
+            self.refresh_plots()
+            return
 
         # print(Geometry)
         print('SF: ' + SF.print_str())
@@ -224,7 +240,7 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
 
         # Show message
         if error_msg:
-            self.show_msg_box(error_msg)
+            self.show_msg_box(error_msg, set_load_fac_label=True)
         else:
             self.load_fac_label.setText('No load-factor currently applied')
 
@@ -808,6 +824,32 @@ class MyMainWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             event.accept()
         else:
             event.ignore()
+
+    def version_check(self):
+        # This method retreivings the latest release version from GitHub
+        import requests
+        r = requests.get('https://api.github.com/repos/Kleissl/HollowRC/releases/latest')
+        # print(r)
+        if r.status_code == 200:
+            # print(r.headers['content-type'])
+            data = r.json()
+            # print(data.keys())
+            # for key in data:
+            #     print(key, 'corresponds to', data[key])
+            latest_tag = data['tag_name']
+            published = data['published_at']
+            print('The latest release (' + latest_tag +') was published at ' + published)
+            if latest_tag == self.tag:
+                print('version up-to-date')
+                msg_str = 'version up-to-date'
+                msg_info_str = 'The current version ('+ self.tag +') matches the latest release'
+            else:
+                msg_str = 'The application ('+ self.tag +') is NOT up-to-date!'
+                msg_info_str = 'There is a newer release (' + latest_tag + ') from ' + published + ' available for download at https://github.com/Kleissl/HollowRC/releases/latest'
+            print(msg_str)
+            self.show_msg_box([msg_str, msg_info_str], title='Information')
+        else:
+            print('Github API requests returned statuscode', r.status_code)
 
 # # Creating my own GraphicsScene class so I can overwrite its mousePressEvent
 # class MyGraphicsScene(QtWidgets.QGraphicsScene):

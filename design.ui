@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -168,7 +168,7 @@
            <rect>
             <x>10</x>
             <y>10</y>
-            <width>751</width>
+            <width>521</width>
             <height>31</height>
            </rect>
           </property>
@@ -241,6 +241,25 @@
           </property>
           <property name="text">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/moment_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_version">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>630</y>
+            <width>61</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>v1.0</string>
           </property>
          </widget>
         </widget>
@@ -401,17 +420,17 @@
                 </item>
                 <item row="0" column="1">
                  <property name="text">
-                  <string>2250</string>
+                  <string>2000</string>
                  </property>
                 </item>
                 <item row="0" column="2">
                  <property name="text">
-                  <string>400</string>
+                  <string>300</string>
                  </property>
                 </item>
                 <item row="0" column="3">
                  <property name="text">
-                  <string>0.013</string>
+                  <string>0.01</string>
                  </property>
                 </item>
                 <item row="0" column="4">
@@ -421,22 +440,22 @@
                 </item>
                 <item row="1" column="0">
                  <property name="text">
-                  <string>4000</string>
+                  <string>1500</string>
                  </property>
                 </item>
                 <item row="1" column="1">
                  <property name="text">
-                  <string>2250</string>
+                  <string>2000</string>
                  </property>
                 </item>
                 <item row="1" column="2">
                  <property name="text">
-                  <string>400</string>
+                  <string>200</string>
                  </property>
                 </item>
                 <item row="1" column="3">
                  <property name="text">
-                  <string>0.013</string>
+                  <string>0.01</string>
                  </property>
                 </item>
                 <item row="1" column="4">
@@ -446,7 +465,7 @@
                 </item>
                 <item row="2" column="0">
                  <property name="text">
-                  <string>4000</string>
+                  <string>1500</string>
                  </property>
                 </item>
                 <item row="2" column="1">
@@ -456,12 +475,12 @@
                 </item>
                 <item row="2" column="2">
                  <property name="text">
-                  <string>400</string>
+                  <string>300</string>
                  </property>
                 </item>
                 <item row="2" column="3">
                  <property name="text">
-                  <string>0.013</string>
+                  <string>0.01</string>
                  </property>
                 </item>
                 <item row="2" column="4">
@@ -481,12 +500,12 @@
                 </item>
                 <item row="3" column="2">
                  <property name="text">
-                  <string>400</string>
+                  <string>200</string>
                  </property>
                 </item>
                 <item row="3" column="3">
                  <property name="text">
-                  <string>0.013</string>
+                  <string>0.01</string>
                  </property>
                 </item>
                 <item row="3" column="4">
@@ -1289,27 +1308,27 @@
                 </column>
                 <item row="0" column="0">
                  <property name="text">
-                  <string>-38000</string>
+                  <string>-15000</string>
                  </property>
                 </item>
                 <item row="0" column="1">
                  <property name="text">
-                  <string>0</string>
+                  <string>20000</string>
                  </property>
                 </item>
                 <item row="0" column="2">
                  <property name="text">
-                  <string>50000</string>
+                  <string>0</string>
                  </property>
                 </item>
                 <item row="0" column="3">
                  <property name="text">
-                  <string>5000</string>
+                  <string>0</string>
                  </property>
                 </item>
                 <item row="0" column="4">
                  <property name="text">
-                  <string>0</string>
+                  <string>5000</string>
                  </property>
                 </item>
                 <item row="0" column="5">

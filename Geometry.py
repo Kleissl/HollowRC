@@ -133,6 +133,20 @@ class CrossSection:
         else:
             return e
 
+    def valid(self):
+        for T in self.get_thick():
+            if T <= 0:
+                print('Negative or zero wall thickness!')
+                return False
+        for L in self.get_wallLength():
+            if L <= 0:
+                print('Negative or zero wall length!')
+                return False
+        if self.get_enclosed_area() > 0:  # note that the correct clockwise definition yields a negative enclosed area
+            print('Counter-clockwise definition of cross-section!')
+            return False
+        return True
+
     # Second Moment of Area
     #Ix.append(wallLength[i]*T[i]/12 * ( wallLength[i]**2 * math.cos(wallAngle[i])**2 + T[i]**2 * math.sin(wallAngle[i])**2 ))
     #Ix.append(wallLength[i] * T[i] / 12 * (

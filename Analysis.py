@@ -421,12 +421,13 @@ def dualSection(section, SF, Mat):
     dx = 0.001  # [m] Offset
     SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * SF.Vy, SF.My - dx * SF.Vx)
     # SF2 = prep_dual_section(SF, dx)  # nabouring SF
-
+    
     # --------------- Optimize plane strain variables for the secondary section ---------------
     opt2 = nlopt.opt(nlopt.LN_NELDERMEAD, len(x))
     opt2.set_min_objective(lambda x, grad: errorFunBending(x, section, SF2, Mat))
     opt2.set_xtol_rel(1e-8)
-    x2 = opt2.optimize(x)
+    x0 = [0 if abs(x)<1e-6 else x for x in x0] # the initial guess may not contain extremely small values such as 3e-169
+    x2 = opt2.optimize(x0)
     print("Optimized strain state2 =", x2)
     print("Minimized error2 value = ", opt.last_optimum_value())
 
@@ -434,7 +435,7 @@ def dualSection(section, SF, Mat):
     _, dist = BendingEQ(section, Mat, x[0], x[1], x[2])         # get distributions from first section
     _, dist2 = BendingEQ(section, Mat, x2[0], x2[1], x2[2])     # get distributions from first section
     H = shear_flow(dist, dist2, SF, section, dx)
-
+    
     # --------------- SLS verification ---------------
     # Disk stress components
     theta, sigma_c, sigma_sx, sigma_sy = [], [], [], []

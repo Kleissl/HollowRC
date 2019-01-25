@@ -107,9 +107,6 @@ class HollowRCWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 comp
         # make sure to start at first tab (overrules Qt designer)
         self.tabWidget.setCurrentIndex(0)
 
-        # check if version is up-to-date
-        # self.version_check()
-
     def tab_changed(self): # signal function
         if self.checkBox_analSLS_1.isChecked():
             self.pushButton_analyse.setText('Analyse SLS')

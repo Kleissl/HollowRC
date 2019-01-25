@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'design.ui',
 # licensing of 'design.ui' applies.
 #
-# Created: Thu Jan 17 20:10:14 2019
+# Created: Fri Jan 25 21:00:43 2019
 #      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -247,7 +247,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addWidget(self.label_2)
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        self.graphicsViewGeometry = QtWidgets.QGraphicsView(self.tab_geometry)
+        self.graphicsViewGeometry = MyGeometryView(self.tab_geometry)
         self.graphicsViewGeometry.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.graphicsViewGeometry.setLineWidth(1)
         self.graphicsViewGeometry.setObjectName("graphicsViewGeometry")
@@ -637,7 +637,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.label_16)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.graphicsViewResults = QtWidgets.QGraphicsView(self.tab_loading)
+        self.graphicsViewResults = MyResultView(self.tab_loading)
         self.graphicsViewResults.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.graphicsViewResults.setObjectName("graphicsViewResults")
         self.horizontalLayout_4.addWidget(self.graphicsViewResults)
@@ -722,7 +722,7 @@ class Ui_MainWindow(object):
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -860,6 +860,7 @@ class Ui_MainWindow(object):
         self.exitAct.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Exit application", None, -1))
         self.exitAct.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Q", None, -1))
 
+from Plots import MyGeometryView, MyResultView
 import resources_rc
 
 if __name__ == "__main__":

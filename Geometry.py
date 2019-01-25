@@ -51,6 +51,17 @@ class CrossSection:
             X.append(wall.X[0])
         return X
 
+    def set_XY(self, X, Y):
+        for i, wall in enumerate(self.walls):
+            X0, Y0 = X[i], Y[i]  # start node
+            if i + 1 == len(X):  # if last node
+                X1, Y1 = X[0], Y[0]  # end node
+            else:
+                X1, Y1 = X[i + 1], Y[i + 1]
+            wall.X = [X0, X1]
+            wall.Y = [Y0, Y1]
+            wall.calculate_properties()
+
     def get_Y(self):
         Y = []
         for wall in self.walls:
@@ -185,19 +196,24 @@ class Wall:
         self.thick = thick
         self.rho_long = rho_long
         self.rho_trans = rho_trans
+        self.calculate_properties()
 
+    def calculate_properties(self):
         # variables calculated during initiation
-        self.dX = X[1] - X[0]
-        self.dY = Y[1] - Y[0]
+        self.dX = self.X[1] - self.X[0]
+        self.dY = self.Y[1] - self.Y[0]
         self.length = math.sqrt(self.dX**2 + self.dY**2)
         self.ds = self.length / (self.wallNodeN - 1)
         self.angle = math.atan2(self.dY, self.dX)  # in radians
-        self.area = self.length * thick
-        self.midX = (X[0] + X[1]) / 2  # wall mid point
-        self.midY = (Y[0] + Y[1]) / 2
+        self.area = self.length * self.thick
+        self.midX = (self.X[0] + self.X[1]) / 2  # wall mid point
+        self.midY = (self.Y[0] + self.Y[1]) / 2
         self.Sx = self.midY * self.area  # 1st moment of area
         self.Sy = self.midX * self.area  # 1st moment of area
-        self.enclosed_area = 0.5 * (X[0] * Y[1] - X[1] * Y[0]) / 1000000  # enclosed area
+        self.enclosed_area = 0.5 * (self.X[0] * self.Y[1] - self.X[1] * self.Y[0]) / 1000000  # enclosed area
+
+    def __str__(self):
+        return "member of Wall"
 
     def integrate_dist(self, dist):
         # # define weights/eff. length for each node

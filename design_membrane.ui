@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -598,7 +598,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_9">
               <item>
-               <widget class="MyGeometryView" name="graphicsViewGeometry">
+               <widget class="QGraphicsView" name="graphicsViewGeometry">
                 <property name="frameShape">
                  <enum>QFrame::NoFrame</enum>
                 </property>
@@ -1426,7 +1426,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="MyResultView" name="graphicsViewResults">
+               <widget class="QGraphicsView" name="graphicsViewResults">
                 <property name="frameShape">
                  <enum>QFrame::NoFrame</enum>
                 </property>
@@ -1608,18 +1608,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MyGeometryView</class>
-   <extends>QGraphicsView</extends>
-   <header>Plots</header>
-  </customwidget>
-  <customwidget>
-   <class>MyResultView</class>
-   <extends>QGraphicsView</extends>
-   <header>Plots</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>

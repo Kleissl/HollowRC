@@ -12,3 +12,6 @@ NLopt==2.4.2
 
 # for building executable
 PyInstaller==3.4
+
+# for calling Githib API
+requests==2.21.0

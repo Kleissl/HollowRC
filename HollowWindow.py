@@ -63,11 +63,17 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # --- Signals --- (e,g, change signals from check box state, drop down selection and editable values)
         self.coordinates_tableWidget.itemChanged.connect(self.geometry_plot)
         self.graphicsViewGeometry.new_section.connect(self.setGeometry)  # call setGeometry method if a new_section signal is received
+        self.graphicsViewGeometry.scene_clicked.connect(self.node_coords_by_click) 
+        self.graphicsViewResults.status_str.connect(self.update_statusline) 
+
         # self.graphicsViewGeometry.itemChanged.connect(self.node_moved)
         self.tabWidget.currentChanged.connect(self.tab_changed)
+        check_boxes = []
         for j in range(10):  # update result plot if plot checkbox is changed
             check_box = getattr(self, 'checkBox_plot' + str(j+1))
             check_box.stateChanged.connect(self.refresh_plots)
+            check_boxes.append(check_box)
+        self.graphicsViewResults.set_check_boxes(check_boxes)
         obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
         for string in obj_list:
             obj = getattr(self, 'lineEdit_' + string)   # e.g. obj = self.lineEdit_f_ck
@@ -80,10 +86,6 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             lambda checked: checked and self.checkBox_analULS_1.setChecked(False))
         self.checkBox_analULS_1.toggled.connect(
             lambda checked: checked and self.checkBox_analSLS_1.setChecked(False))
-
-        # --- Events ---
-        # self.graphicsViewResults.mouseMoveEvent = self.hoverShow
-        # self.graphicsViewResults.mousePressEvent = self.onClick
 
         # App window size, location and title
         self.center()
@@ -270,6 +272,17 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+    def node_coords_by_click(self, signal_value):
+        x = signal_value['x']
+        y = signal_value['y']
+        self.graphicsViewGeometry.awaits_click = False  # stop further signals from being send
+        table = self.coordinates_tableWidget
+        row_index = table.rowCount() - 1        # get index of last row
+        x_item = table.item(row_index, 0)       # Retrieve item from the cell
+        x_item.setText(str(x))                  # Replace bad item content
+        y_item = table.item(row_index, 1)
+        y_item.setText(str(-y))                  # Replace bad item content
+
     def add_row(self):
         self.coordinates_tableWidget.blockSignals(True)
         row_count = self.coordinates_tableWidget.rowCount()         # get number of rows
@@ -278,8 +291,9 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         col_count = self.coordinates_tableWidget.columnCount()      # get number of columns
         for col in range(col_count):  # loop over columns
             self.coordinates_tableWidget.setItem(row_count, col, QtWidgets.QTableWidgetItem())  # set item to row below
-        self.statusbar.showMessage('Recent action: row added')
+        self.statusbar.showMessage('Recent action: row added - Click on geometry plot scene to load coordinates into the newly added row')
         self.coordinates_tableWidget.blockSignals(False)
+        self.graphicsViewGeometry.awaits_click = True       # will allow for scene_clicked signals
 
     def remove_row(self):
         self.coordinates_tableWidget.blockSignals(True)
@@ -471,8 +485,9 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         return row_values
 
     def geometry_plot(self): 
+        self.graphicsViewGeometry.awaits_click = False          # properly triggered by manual change in geometry table thus no longer awaits node_coords_by_click
         section = self.getGeometry()                            # Load geometry data
-        self.graphicsViewGeometry.plot_all(section)             # update plot update
+        self.graphicsViewGeometry.plot_all(section)             # update plot
 
     def material_plot(self):
         # Load material data
@@ -518,121 +533,9 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         #chartView.fitInView(self.chart.Geometry(), QtCore.Qt.KeepAspectRatio)
 
     def result_plot(self, Res):
-        # setup graphics scene
-        view = self.graphicsViewResults        # define view from gui widget
-        # self.scene = MyGraphicsScene()     # creates a scene?
-        # self.scene.clear()
-        self.scene = QtWidgets.QGraphicsScene()  # creates a scene?
-        view.setScene(self.scene)                   # set the created scene
-
-        if not self.Res:
-            self.scene.clear()  # clearing the plot if there's no results or latest analysis failed
-            return
-        
-        # unpack results dictionary
-        x = Res.x
-        y = Res.y
-        wallAngle = Res.wallAngle
-        # print(wallAngle)
-
-        # self.scene.mousePressEvent = self.onSceneClick
-        # self.scene.selectionChanged = self.selectedItem
-
-        # Styles
-        bold_pencil = QtGui.QPen(QtCore.Qt.DashLine)
-        bold_pencil.setColor(QtCore.Qt.black)
-        bold_pencil.setWidth(10)
-
-        # colour list for plotting pens
-        colour_list = [QtCore.Qt.darkGray,
-                       QtCore.Qt.blue,
-                       QtCore.Qt.red,
-                       QtCore.Qt.green,
-                       QtCore.Qt.darkRed,
-                       QtCore.Qt.darkMagenta,
-                       QtCore.Qt.darkBlue,
-                       QtCore.Qt.darkCyan,
-                       QtCore.Qt.darkGreen,
-                       QtCore.Qt.darkYellow,  # for some reason the checkbox label goes black with this color
-                       QtCore.Qt.gray,
-                       QtCore.Qt.lightGray,  # too light
-                       QtCore.Qt.cyan]
-
-        # plot geometry centre line
-        rect = QtGui.QPolygonF()
-        for i in range(len(x)):
-            rect.append(QtCore.QPointF(x[i], -y[i]))
-        self.scene.addPolygon(rect, pen=bold_pencil)
-
-        # calculate largest dimension of cross-section
-        section_dim = max(max(y) - min(y), max(x) - min(x))
-
-        # self.checkBox_plot1.isVisible()
-        for j in range(Res.plot_count): # looping over the different result distributions
-            pencil = QtGui.QPen(colour_list[j]) # create pen with next colour
-            fill = QtGui.QBrush(colour_list[j]) # create brush with same colour
-            
-            pencil.setWidth(10)
-            check_box = getattr(self, 'checkBox_plot' + str(j+1))
-            # update checkbox visibility
-            if not check_box.isVisible():
-                check_box.setVisible(True)
-            check_box.setText(Res.plot_names[j])
-            check_box.setStyleSheet("color: " + colour_list[j].name.decode())
-            
-            # plot if checked
-            if check_box.isChecked():
-                scale = Res.plot_scale[j] * section_dim / max(1e-12, max(abs(Res.plot_data[j])))
-                rect = QtGui.QPolygonF() # outline polygon
-                for i in range(len(Res.x)):
-                    PX = Res.x[i] + scale * Res.plot_data[j][i] * math.sin(-wallAngle[i])
-                    PY = Res.y[i] + scale * Res.plot_data[j][i] * math.cos(-wallAngle[i])
-                    if Res.x[i] == Res.x[i - 1] and Res.y[i] == Res.y[i - 1]:  # new wall element started
-                        rect.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
-                        # prepare/plot shading
-                        if i>0:
-                            # plot shading
-                            rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
-                            poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
-                            poly_item.setBrush(fill)
-                            poly_item.setOpacity(0.2)
-                            self.scene.addItem(poly_item)
-                            # self.scene.addPolygon(rect2, brush=fill)
-
-                        rect2 = QtGui.QPolygonF() # shading polygon
-                        rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
-                        rect2.append(QtCore.QPointF(PX, -PY))
-                    else:
-                        # add point for shading polygon
-                        rect2.append(QtCore.QPointF(PX, -PY))
-                    rect.append(QtCore.QPointF(PX, -PY))
-
-                    # prepare line for mouse clicks
-                    line = QtCore.QLineF(PX, -PY, Res.x[i], -Res.y[i])  # x pos. right, y pos. down
-                    # line_item = QtWidgets.QGraphicsLineItem(line)
-                    line_item = myLine(line)
-                    line_item.setPen(pencil)
-                    line_item.data_str = '{}: {:.3f} {}'.format(Res.plot_names[j], Res.plot_data[j][i], Res.plot_units[j])  # string for click ev.
-                    line_item.setAcceptHoverEvents(True)
-                    line_item.mousePressEvent = self.ResultItemClicked  # overrule class event
-                    self.scene.addItem(line_item)
-
-                # plot shading
-                rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
-                poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
-                poly_item.setBrush(fill)
-                poly_item.setOpacity(0.2)
-                self.scene.addItem(poly_item)
-                # plot result outline
-                self.scene.addPolygon(rect, pen=pencil)
-
-        # Hide the remaining unneeded check boxes
-        for j in range(Res.plot_count, 10):
-            check_box = getattr(self, 'checkBox_plot' + str(j + 1))
-            check_box.setVisible(False)
-
-        # Fit plottet items in view
-        view.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        # print('calling result plot class')
+        self.graphicsViewResults.plot_all(Res)             # update plot
+        # print('finished calling result plot class')
 
     # class FitSceneInViewGraphicsView(QtWidgets.QGraphicsView):
     #     """
@@ -640,10 +543,8 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
     #     This avoids problems with the size of the view different before any layout can take place and therefore
     #     fitInView failing.
     #     """
-    
     #     def __init__(self, *args, **kwargs):
     #         super().__init__(*args, **kwargs)
-    
     #     def showEvent(self, event):
     #         """
     #         The view is shown (and therefore has correct size). We fit the scene rectangle into the view without
@@ -652,57 +553,12 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
     #         self.fitInView(self.sceneRect(), QtCore.Qt.KeepAspectRatio)
     #         super().showEvent(event)
 
-    # def selectedItem(self):
-    #     print('selection changed')
-    #     print(self.scene.selectedItems())
-
     def resizeEvent(self, event): # overwrites the resizeEvent
         self.refresh_plots()
         return QtWidgets.QMainWindow.resizeEvent(self, event)
 
-    # def onSceneClick(self, event):
-    #     x = event.scenePos().x()
-    #     y = event.scenePos().y()
-    #     print('press event (x,y) = ({}, {})'.format(x, y))
-    #     # view = self.graphicsViewResults
-    #     # print('view rect ', view.rect())
-    #     # print('view-scene rect ', view.sceneRect())
-    #     # print('scene panel rect ', self.scene.mousePressEvent())
-    #     items = self.scene.items(event.scenePos())
-    #     print(items)
-    #     # for item in items:
-    #         # item.is
-
-    def ResultItemClicked(self, event): # when user clicks on result the values are listed in the status line
-        # x = event.scenePos().x()
-        # y = event.scenePos().y()
-        # print('Item press event (x,y) = ({}, {})'.format(x, y))
-        # print('data string: ', data_str)
-        # view = self.graphicsViewResults
-        # print('view rect ', view.rect())
-        # print('view-scene rect ', view.sceneRect())
-        # print('scene panel rect ', self.scene.mousePressEvent())
-        # print('onItemClick')
-        items = self.scene.items(event.scenePos())
-        msg = 'Point data: '
-        for item in items:
-            if hasattr(item, 'data_str'):
-                msg += "{}, ".format(item.data_str)
-        if len(msg) > 13:
-            self.statusbar.showMessage(msg[:-2])
-            print(msg[:-2])
-        return QtWidgets.QGraphicsLineItem.mousePressEvent(self, event) 
-
-    # def mousePressEvent(self, event):
-    #     # pen = QPen(QtCore.Qt.black)
-    #     # brush = QBrush(QtCore.Qt.black)
-    #     x = event.scenePos().x()
-    #     y = event.scenePos().y()
-    #     # if self.opt == "Generate":
-    #     #     self.addEllipse(x, y, 4, 4, pen, brush)
-    #     # elif self.opt == "Select":
-    #     print('from pressevent ', x, y)
-    #     print('view rect ', self.graphicsViewResults.rect())
+    def update_statusline(self, string):
+        self.statusbar.showMessage(string)
 
     def keyPressEvent(self, event):
         """Close application from escape key.
@@ -743,9 +599,8 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             published = data['published_at']
             print('The latest release (' + latest_tag +') was published at ' + published)
             if latest_tag == self.tag:
-                print('version up-to-date')
-                msg_str = 'version up-to-date'
-                msg_info_str = 'The current version ('+ self.tag +') matches the latest release'
+                msg_str = 'Version up-to-date'
+                msg_info_str = 'The current version ('+ self.tag +') matches the latest release from https://github.com/Kleissl/HollowRC/releases/latest'
             else:
                 msg_str = 'The application ('+ self.tag +') is NOT up-to-date!'
                 msg_info_str = 'There is a newer release (' + latest_tag + ') from ' + published + ' available for download at https://github.com/Kleissl/HollowRC/releases/latest'
@@ -755,44 +610,5 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             print('Github API requests returned statuscode', r.status_code)
 
 
-# # # Creating my own line item class so I can overwrite its mousePressEvent
-# # line_item = QtWidgets.QGraphicsLineItem(line)
-class myLine(QtWidgets.QGraphicsLineItem):
-    # def __init__(self, parent=None):
-    #     # QtWidgets.QGraphicsScene.__init__(self, parent)
-    #     # super(MyGraphicsScene, self).__init__(parent)
-    #     super().__init__()
-    #     self.setSceneRect(-100, -100, 200, 200)
-
-    # def mousePressEvent(self, event):  # currently this is being overruled from the window class!
-    #     super().mousePressEvent(event)
-    #     print(event.pos())
-    #     x = event.scenePos().x()
-    #     y = event.scenePos().y()
-    #     print('item_mousePressEvent x,y= ', x, y)
-    #     # items = QtWidgets.QGraphicsItem.scene().items(event.scenePos())
-    #     # QtWidgets.QGraphicsItem.item
-    #     # items = self.scene().items(event.scenePos())
-    #     # print('Plots:', [x for x in items if isinstance(x, pg.PlotItem)]
-    #     # self.items()
-    #     # item = QtWidgets.QGraphicsTextItem("CLICK")
-    #     # item.setPos(event.scenePos())
-    #     # self.addItem(item)
-    #     return QtWidgets.QGraphicsEllipseItem.mousePressEvent(self, event)
-
-    def hoverEnterEvent(self, event):
-        # print('hoverEnterEvent')
-        pen = self.pen()
-        self.original_width = pen.width()
-        pen.setWidth(20)
-        self.setPen(pen)
-        return QtWidgets.QGraphicsLineItem.hoverEnterEvent(self, event)
-    
-    def hoverLeaveEvent(self, event):
-        # print('hoverLeaveEvent')
-        pen = self.pen()
-        pen.setWidth(self.original_width)
-        self.setPen(pen)
-        return QtWidgets.QGraphicsLineItem.hoverLeaveEvent(self, event)
 
    

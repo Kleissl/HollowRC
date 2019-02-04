@@ -51,5 +51,5 @@ For the versions available, see the [tags on this repository](https://github.com
 The HollowRC project is licensed under the GNU GPL license, so any code using it must also be under the same license - see the [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
-* Thanks to the COWI Foundation for funding the original idea development and drafting of the first working version.
+* Thanks to the COWI Foundation for funding the development of the concept and drafting of the first working version.
 * Thanks to João Luís Domingues Costa for valuable discussions and feedback to the project

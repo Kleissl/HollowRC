@@ -64,7 +64,7 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         self.coordinates_tableWidget.itemChanged.connect(self.geometry_plot)
         self.graphicsViewGeometry.new_section.connect(self.setGeometry)  # call setGeometry method if a new_section signal is received
         self.graphicsViewGeometry.scene_clicked.connect(self.node_coords_by_click) 
-        self.graphicsViewResults.status_str.connect(self.update_statusline) 
+        self.graphicsViewResults.status_str.connect(self.update_statusline) # connect the status_str signal with the update_statusline method
 
         # self.graphicsViewGeometry.itemChanged.connect(self.node_moved)
         self.tabWidget.currentChanged.connect(self.tab_changed)
@@ -157,9 +157,10 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             section = self.getGeometry()
             SF = self.getSF()
             Mat = self.getMaterial()
+            Analysis = {'checkBox_analSLS_1': self.checkBox_analSLS_1.isChecked(), 'checkBox_analULS_1': self.checkBox_analULS_1.isChecked()}
             # open file for writing
             with open(filename, 'wb') as f:
-                pickle.dump([section, SF, Mat], f) # dump objevts to file
+                pickle.dump([section, SF, Mat, Analysis], f) # dump objevts to file
             print('file saved')
         except FileNotFoundError:
             pass  # do nothing when user press cancel
@@ -173,11 +174,13 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             filename = openfile[0]
             # open file for reading
             with open(filename, 'rb') as f:
-                section, SF, Mat = pickle.load(f) # Getting back the objects
+                section, SF, Mat, Analysis = pickle.load(f) # Getting back the objects
             #  insert variables in GUI
             self.setGeometry(section)
             self.setSF(SF)
             self.setMaterial(Mat)
+            self.checkBox_analSLS_1.setChecked(Analysis['checkBox_analSLS_1'])
+            self.checkBox_analULS_1.setChecked(Analysis['checkBox_analULS_1'])
             print('file opened')
         except FileNotFoundError:
             pass  # do nothing when user press cancel
@@ -608,7 +611,3 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             self.show_msg_box([msg_str, msg_info_str], title='Information')
         else:
             print('Github API requests returned statuscode', r.status_code)
-
-
-
-   

@@ -9,6 +9,7 @@ Author: Kenneth C. Kleissl
 """
 import math
 import numpy as np
+import Verification
 
 
 class CrossSection:
@@ -158,6 +159,18 @@ class CrossSection:
             return False
         return True
 
+    def set_section_dist(self, dist):
+        for i,wall in enumerate(self.walls):  # looping over walls
+            N = wall.wallNodeN # nodes per wall
+            wall_dist = {}
+            for key in dist:
+                wall_dist[key] = dist[key][i*N:(i+1)*N]
+            wall.set_wall_dist(wall_dist)
+
+    def get_wall_shear_capacities(self, Mat):
+        # returns a list of wall yield shear forces 
+        return [wall.get_yield_shear_force(Mat) for wall in self.walls]
+
     # Second Moment of Area
     #Ix.append(wallLength[i]*T[i]/12 * ( wallLength[i]**2 * math.cos(wallAngle[i])**2 + T[i]**2 * math.sin(wallAngle[i])**2 ))
     #Ix.append(wallLength[i] * T[i] / 12 * (
@@ -214,6 +227,26 @@ class Wall:
 
     def __str__(self):
         return "member of Wall"
+
+    def set_wall_dist(self, dist):
+        self.dist = dist
+
+    def get_yield_shear_force(self, Mat):
+        H_yield = self.get_yield_flow(Mat)
+        V_yield = self.integrate_dist(H_yield) / 1000 # dividing by 1000 to get force in [kN]
+        return V_yield
+
+    def get_yield_flow(self, Mat):
+        H_yield = []
+
+        for N_flow in self.dist['normal_flow']:  # looping over wall data points
+            sigma_x = N_flow / self.thick #
+            stress = [sigma_x, 0, 0]
+            verification = Verification.Verify(stress, Mat, self.rho_long, self.rho_trans)
+            H_yield.append(verification.tau_yielding() * self.thick)
+
+        return H_yield
+
 
     def integrate_dist(self, dist):
         # # define weights/eff. length for each node

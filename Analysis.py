@@ -89,32 +89,80 @@ def planeSection(section, SF, Mat):
 
     _, dist = BendingEQ(section, Mat, x[0], x[1], x[2])  # get distributions
 
-    # --------------- Dual-section analysis for initial guess ---------------
-    # Prepare second section
-    dx = 0.001  # [m] Offset
-    SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * SF.Vy, SF.My - dx * SF.Vx)
-    # SF2 = prep_dual_section(SF, dx)  # nabouring SF
+    # # --------------- Dual-section analysis for initial guess ---------------
+    # # Prepare second section
+    # dx = 0.001  # [m] Offset
+    # SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * SF.Vy, SF.My - dx * SF.Vx)
+    # # SF2 = prep_dual_section(SF, dx)  # nabouring SF
 
-    # Optimize plane strain variables for the secondary section
-    opt2 = nlopt.opt(nlopt.LN_NELDERMEAD, len(x))
-    opt2.set_min_objective(lambda x, grad: errorFunBending(x, section, SF2, Mat))
-    opt2.set_xtol_rel(1e-8)
-    x2 = opt2.optimize(x)
-    print("Optimized strain state2 =", x2)
-    print("Minimized error2 value = ", opt.last_optimum_value())
-    # print("result2 code = ", opt.last_optimize_result())
+    # # Optimize plane strain variables for the secondary section
+    # opt2 = nlopt.opt(nlopt.LN_NELDERMEAD, len(x))
+    # opt2.set_min_objective(lambda x, grad: errorFunBending(x, section, SF2, Mat))
+    # opt2.set_xtol_rel(1e-8)
+    # x2 = opt2.optimize(x)
+    # print("Optimized strain state2 =", x2)
+    # print("Minimized error2 value = ", opt.last_optimum_value())
+    # # print("result2 code = ", opt.last_optimize_result())
 
-    # Shear flow - Counter-clockwise shear flow is positive
-    _, dist = BendingEQ(section, Mat, x[0], x[1], x[2])         # get distributions from first section
-    _, dist2 = BendingEQ(section, Mat, x2[0], x2[1], x2[2])     # get distributions from first section
-    H = shear_flow(dist, dist2, SF, section, dx)
+    # # Shear flow - Counter-clockwise shear flow is positive
+    # _, dist = BendingEQ(section, Mat, x[0], x[1], x[2])         # get distributions from first section
+    # _, dist2 = BendingEQ(section, Mat, x2[0], x2[1], x2[2])     # get distributions from first section
+    # H = shear_flow(dist, dist2, SF, section, dx)
 
-    # --------------- Optimize shear flow distribution ---------------
-    # initial guess for shear flow distribution
-    x0 = np.array(H)
+    # --------------- Optimize shear flow distribution (on wall level) ---------------
+    # get wall shear force capacity
+    section.set_section_dist(dist) # send the normal flow etc. all the way down to Wall level
+    V_yield = section.get_wall_shear_capacities(Mat)
+
+    # initial guess for wall shear forces
+    x0 = np.array(V_yield)
     x0 = np.append(x0, 1.0)  # append the shear load factor variable
+    
+    # Determine variable bounds 
+    lower_bound = [-x for x in V_yield]     # define lower bound list by neative yield shear flow
+    lower_bound.append(1e-8)                # add shear load factor to lower bound list
+    upper_bound = V_yield + [1.0]           # define upper bound list by pos. yield shear flow + added shear load factor
 
-    # Determine variable bounds based on shear flow at yielding
+    # initiate optimization instance
+    opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))   # only LD_SLSQP support equality constraints
+
+    # set bounds
+    opt.set_lower_bounds(lower_bound)
+    opt.set_upper_bounds(upper_bound)
+
+    # set objective
+    # opt.set_max_objective(lambda x, grad: myObjective(x))
+    opt.set_max_objective(myObjective)
+
+    # set constraint
+    # opt.add_equality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, Mat), 1e-8)
+    # opt.add_inequality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, dist), 1e-6)  # feasible if func < tol
+    opt.add_equality_mconstraint(lambda result, x, grad: myShearConstraints2(result, x, grad, section, SF), [1e-6, 1e-6, 1e-6])  # feasible if func < tol
+    # opt.add_inequality_constraint(lambda x, grad: myYieldConstraint(x, dist), 1e-8)
+    
+    # tolerances
+    opt.set_xtol_rel(1e-8)
+
+    # solve
+    xopt = opt.optimize(x0)
+    V_wall = xopt[:-1]
+
+    # print result
+    print("wall based shear maximized load factor =", xopt[-1])
+    # print("shear final objective = ", opt.last_optimum_value())
+    # print("wall based shear optimum at V_wall =", V_wall)
+
+    shear_error = errorFunShear2(xopt, section, SF)
+    print("wall based shear error at opt =", shear_error)
+    # print("shear result code = ", opt.last_optimize_result())
+    if shear_error > 1e-4:
+        print("Error too big!, shear optimization failed")
+        error_msg = ["Failed to optimize shear flow"]
+        return None, error_msg
+
+
+    # --------------- Build shear flow from optimum wall shear forces ---------------
+    # Determine shear flow at yielding
     H_yield = []
     i = 0
     for wall in section.walls:  # looping over walls
@@ -128,90 +176,27 @@ def planeSection(section, SF, Mat):
         # print(wall.integrate_dist(H_yield_temp))
         H_yield.extend(H_yield_temp)
 
-    # print('H_yield: ', H_yield)
-    lower_bound = [-x for x in H_yield]     # define lower bound list by neative yield shear flow
-    lower_bound.append(1e-8)                # add shear load factor to lower bound list
-    upper_bound = H_yield + [1.0]           # define upper bound list by pos. yield shear flow + added shear load factor
-
-    # move initial guess inside bounds
-    for i in range(len(x0)):
-        x0[i] = np.sign(x0[i]) * upper_bound[i]  # optimization seems to work better for large initial shear flows
-        # if abs(x0[i]) > upper_bound[i]:
-        #     # print('bound ', i, ' outside bound')
-        #     x0[i] = x0[i]/abs(x0[i])*abs(upper_bound[i])
-
-    # initiate optimization instance
-    opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))   # only LD_SLSQP support equality constraints
-
-    # set bounds
-    opt.set_lower_bounds(lower_bound)
-    opt.set_upper_bounds(upper_bound)
-    # set objective
-    # opt.set_max_objective(lambda x, grad: myObjective(x))
-    opt.set_max_objective(myObjective)
-    # set constraint
-    # opt.add_equality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, Mat), 1e-8)
-    # opt.add_inequality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, dist), 1e-6)  # feasible if func < tol
-    opt.add_equality_mconstraint(lambda result, x, grad: myShearConstraints(result, x, grad, section, SF, dist), [1e-6, 1e-6, 1e-6])  # feasible if func < tol
-    # opt.add_inequality_constraint(lambda x, grad: myYieldConstraint(x, dist), 1e-8)
-    # tolerances
-    opt.set_xtol_rel(1e-8)
-    # solve
-    xopt = opt.optimize(x0)
-    H = xopt[:-1]
-    # print result
-    print("shear maximized load factor =", xopt[-1])
-    # print("shear final objective = ", opt.last_optimum_value())
-    # print("shear optimum at H =", H)
-    shear_error = errorFunShear(xopt, section, SF, dist)
-    print("shear error at opt =", shear_error)
-    # print("shear result code = ", opt.last_optimize_result())
-    if shear_error > 1e-4:
-        print("Error too big!, shear optimization failed")
-        error_msg = ["Failed to optimize shear flow"]
-        return None, error_msg
-
-    # --------------- Adjust the found optimum ---------------
-    # The shear optimization problem should have been reduced to a smaller problem where the total shear force in each wall makes up the variables
-    # for now the shear distribution in each wall is locally rearranged to instead reflect a scaled down H_yield distribution
-    H_adjust = []
+    H = []
     for i, wall in enumerate(section.walls):  # looping over walls
-        j_start = i * wall.wallNodeN
-        j_end = (i + 1) * wall.wallNodeN
-        # define weights/eff. length for each node
-        ds = [0.5 * wall.length / (wall.wallNodeN - 1) if i in (0, wall.wallNodeN - 1) else wall.length / (
-                    wall.wallNodeN - 1) for i in range(wall.wallNodeN)]
-        # Integrate optimized shear flow
-        V_wall = sum(ds * H[j_start:j_end])
-        # Integrate yield shear flow
-        V_yield = sum(ds * np.array(H_yield)[j_start:j_end])
-        if V_yield: # only if non-zero. try-except block don't work here as numpy only raises a warning and output nan (no exceptions raised)
-            shear_UR = V_wall / V_yield  # one of these sometimes equals NAN!
+
+        # calculate UR
+        if V_yield[i]: # only if non-zero. try-except block don't work here as numpy only raises a warning and output nan (no exceptions raised)
+            shear_UR = V_wall[i] / V_yield[i]  # one of these sometimes equals NAN!
         else: # if the wall shear capacity is zero
             shear_UR = 1  # set shear_UR to 100%
-        print('shear flow in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall, abs(shear_UR) * 100))
-        # replace H with scaled down H_yield
-        H_adjust.extend([shear_UR * H_yield[i] for i in range(j_start, j_end)])
-    H = np.array(H_adjust)
 
-    # --------------- ULS verification ---------------
-    # Disk stress components
-    ur_over = []
-    i = 0
-    for wall in section.walls:  # looping over walls
-        for j in range(wall.wallNodeN):  # looping over wall data points
-            sigma_x = dist['normal_flow'][i] / wall.thick
-            tau = H[i] / wall.thick
-            stress = [sigma_x, 0, tau]
-            verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
-            ur_over.append(max(0, verification.utilization() - 1))
-            # print("sigma_x, tau, UR =", sigma_x, tau, f[-1])
-            i += 1  # index counter to be used with continuous dist vectors
-    if max(ur_over) > 0:
-        print("yield/overutilization reached!")
-    else:
-        print("no yielding occurs")
-    H_yield = H_yield * H / (abs(H) + 1e-12)
+        print('shear force in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall[i], abs(shear_UR) * 100))
+        
+        # build H from scaled down H_yield
+        j_start = i * wall.wallNodeN
+        j_end = (i + 1) * wall.wallNodeN
+        H.extend([shear_UR * H_yield[i] for i in range(j_start, j_end)])
+
+    H = np.array(H)
+
+    # flip sign of H_yield
+    # H_yield = H_yield * H / (abs(H) + 1e-12) # this doesn't work for near zero shear flow
+    H_yield = np.array(H_yield) * np.sign(H)
 
     # Initiate Results class
     Res = Results.Results(dist['x'], dist['y'], dist['wallAngle'])
@@ -220,7 +205,7 @@ def planeSection(section, SF, Mat):
     Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
     Res.add_plot(dist['normal_flow'], 'Normal flow', 'kN/m', 0.17)
     Res.add_plot(H, 'Shear flow', 'kN/m', 0.20)
-    Res.add_plot(np.array(H_yield), 'Max shear flow', 'kN/m', 0.20 * max(H_yield) / (max(abs(H)) + 1e-12))
+    Res.add_plot(H_yield, 'Max shear flow', 'kN/m', 0.20 * max(H_yield) / (max(abs(H)) + 1e-12))
     # Res.add_plot(np.array(ur_over), 'Over-utilization', '', 0.25)
 
     print("Shear flow optimization succeeded, Maximum shear load factor is: " + str(xopt[-1]))
@@ -234,6 +219,133 @@ def planeSection(section, SF, Mat):
     print('Integration test: ', integrateShearFlow(H, dist, section))
 
     return Res, error_msg
+
+
+    # # --------------- Optimize shear flow distribution (on data point level) ---------------
+    # # initial guess for shear flow distribution
+    # x0 = np.array(H)
+    # x0 = np.append(x0, 1.0)  # append the shear load factor variable
+
+    # # Determine variable bounds based on shear flow at yielding
+    # H_yield = []
+    # i = 0
+    # for wall in section.walls:  # looping over walls
+    #     H_yield_temp = []
+    #     for j in range(wall.wallNodeN):  # looping over wall data points
+    #         sigma_x = dist['normal_flow'][i] / wall.thick
+    #         stress = [sigma_x, 0, 0]
+    #         verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
+    #         H_yield_temp.append(verification.tau_yielding() * wall.thick)
+    #         i += 1  # index counter to be used with continuous dist vectors
+    #     # print(wall.integrate_dist(H_yield_temp))
+    #     H_yield.extend(H_yield_temp)
+
+    # # print('H_yield: ', H_yield)
+    # lower_bound = [-x for x in H_yield]     # define lower bound list by neative yield shear flow
+    # lower_bound.append(1e-8)                # add shear load factor to lower bound list
+    # upper_bound = H_yield + [1.0]           # define upper bound list by pos. yield shear flow + added shear load factor
+
+    # # move initial guess inside bounds
+    # for i in range(len(x0)):
+    #     x0[i] = np.sign(x0[i]) * upper_bound[i]  # optimization seems to work better for large initial shear flows
+    #     # if abs(x0[i]) > upper_bound[i]:
+    #     #     # print('bound ', i, ' outside bound')
+    #     #     x0[i] = x0[i]/abs(x0[i])*abs(upper_bound[i])
+
+    # # initiate optimization instance
+    # opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))   # only LD_SLSQP support equality constraints
+
+    # # set bounds
+    # opt.set_lower_bounds(lower_bound)
+    # opt.set_upper_bounds(upper_bound)
+    # # set objective
+    # # opt.set_max_objective(lambda x, grad: myObjective(x))
+    # opt.set_max_objective(myObjective)
+    # # set constraint
+    # # opt.add_equality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, Mat), 1e-8)
+    # # opt.add_inequality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, dist), 1e-6)  # feasible if func < tol
+    # opt.add_equality_mconstraint(lambda result, x, grad: myShearConstraints(result, x, grad, section, SF, dist), [1e-6, 1e-6, 1e-6])  # feasible if func < tol
+    # # opt.add_inequality_constraint(lambda x, grad: myYieldConstraint(x, dist), 1e-8)
+    # # tolerances
+    # opt.set_xtol_rel(1e-8)
+    # # solve
+    # xopt = opt.optimize(x0)
+    # H = xopt[:-1]
+    # # print result
+    # print("shear maximized load factor =", xopt[-1])
+    # # print("shear final objective = ", opt.last_optimum_value())
+    # # print("shear optimum at H =", H)
+    # shear_error = errorFunShear(xopt, section, SF, dist)
+    # print("shear error at opt =", shear_error)
+    # # print("shear result code = ", opt.last_optimize_result())
+    # if shear_error > 1e-4:
+    #     print("Error too big!, shear optimization failed")
+    #     error_msg = ["Failed to optimize shear flow"]
+    #     return None, error_msg
+    # 
+    # # --------------- Adjust the found optimum ---------------
+    # # The shear optimization problem should have been reduced to a smaller problem where the total shear force in each wall makes up the variables
+    # # for now the shear distribution in each wall is locally rearranged to instead reflect a scaled down H_yield distribution
+    # H_adjust = []
+    # for i, wall in enumerate(section.walls):  # looping over walls
+    #     j_start = i * wall.wallNodeN
+    #     j_end = (i + 1) * wall.wallNodeN
+    #     # define weights/eff. length for each node
+    #     ds = [0.5 * wall.length / (wall.wallNodeN - 1) if i in (0, wall.wallNodeN - 1) else wall.length / (
+    #                 wall.wallNodeN - 1) for i in range(wall.wallNodeN)]
+    #     # Integrate optimized shear flow
+    #     V_wall = sum(ds * H[j_start:j_end]) / 1000
+    #     # Integrate yield shear flow
+    #     V_yield = sum(ds * np.array(H_yield)[j_start:j_end]) / 1000
+    #     if V_yield: # only if non-zero. try-except block don't work here as numpy only raises a warning and output nan (no exceptions raised)
+    #         shear_UR = V_wall / V_yield  # one of these sometimes equals NAN!
+    #     else: # if the wall shear capacity is zero
+    #         shear_UR = 1  # set shear_UR to 100%
+    #     print('shear force in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall, abs(shear_UR) * 100))
+    #     # replace H with scaled down H_yield
+    #     H_adjust.extend([shear_UR * H_yield[i] for i in range(j_start, j_end)])
+    # H = np.array(H_adjust)
+
+    # # --------------- ULS verification ---------------
+    # # Disk stress components
+    # ur_over = []
+    # i = 0
+    # for wall in section.walls:  # looping over walls
+    #     for j in range(wall.wallNodeN):  # looping over wall data points
+    #         sigma_x = dist['normal_flow'][i] / wall.thick
+    #         tau = H[i] / wall.thick
+    #         stress = [sigma_x, 0, tau]
+    #         verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
+    #         ur_over.append(max(0, verification.utilization() - 1))
+    #         # print("sigma_x, tau, UR =", sigma_x, tau, f[-1])
+    #         i += 1  # index counter to be used with continuous dist vectors
+    # if max(ur_over) > 0:
+    #     print("yield/overutilization reached!")
+    # else:
+    #     print("no yielding occurs")
+    # H_yield = H_yield * H / (abs(H) + 1e-12)  # this doesn't work for near zero shear flow
+
+    # # Initiate Results class
+    # Res = Results.Results(dist['x'], dist['y'], dist['wallAngle'])
+    # Res.add_plot(dist['strain']*100, 'M+N strain', '%', 0.15)
+    # Res.add_plot(dist['concrete_stress'], 'M+N concrete stress', 'MPa', 0.1)
+    # Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
+    # Res.add_plot(dist['normal_flow'], 'Normal flow', 'kN/m', 0.17)
+    # Res.add_plot(H, 'Shear flow', 'kN/m', 0.20)
+    # Res.add_plot(np.array(H_yield), 'Max shear flow', 'kN/m', 0.20 * max(H_yield) / (max(abs(H)) + 1e-12))
+    # # Res.add_plot(np.array(ur_over), 'Over-utilization', '', 0.25)
+
+    # print("Shear flow optimization succeeded, Maximum shear load factor is: " + str(xopt[-1]))
+    # if xopt[-1] == 1:
+    #     error_msg = None
+    # else:
+    #     error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]), "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
+    #     # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
+    #     #          str(xopt[-1])]
+
+    # print('Integration test: ', integrateShearFlow(H, dist, section))
+
+    # return Res, error_msg
 
 
 # def myYieldConstraint(x, dist):  # Something like this will be needed if also to optimize normal flow
@@ -330,6 +442,37 @@ def myShearConstraints(result, x, grad, section, SF, dist):  # constrain functio
     # print('max abs grad diff: ', np.max(np.abs(grad - grad2)))
 
 
+# for when the variables are wall shear forces
+def myShearConstraints2(result, x, grad, section, SF):  # constrain function for shear optimization
+    # unload variables
+    V = x[:-1]
+    load_fac = x[-1]
+
+    # integrate shear flow into sectional forces
+    # Vx, Vy, T = integrateShearFlow(H, dist, section)
+    Vx, Vy, T = integrateWallShearForces(V, section)
+
+    # Section force difference (sum squared diff.)
+    result[0] = SF.Vx * load_fac - Vx
+    result[1] = SF.Vy * load_fac - Vy
+    result[2] = SF.T  * load_fac - T
+
+    if grad.size > 0:
+
+        e = section.get_e()
+        for i,wall in enumerate(section.walls):
+
+            # gradients
+            grad[0, i] = math.cos(wall.angle)
+            grad[1, i] = math.sin(wall.angle)
+            grad[2, i] = - e[i] / 1000
+
+        # load factor gradient
+        grad[0, -1] = SF.Vx
+        grad[1, -1] = SF.Vy
+        grad[2, -1] = SF.T
+
+
 def integrateShearFlow(H, dist, section):
     # # calculate average shear flow between data points
     # H_avg = (H[1:] + H[:-1]) / 2
@@ -341,7 +484,7 @@ def integrateShearFlow(H, dist, section):
     # ds = dist['ds'] / 1000
     #
     # Integrate for shear sectional forces
-    # Vx = sum(H_avg * ds * np.cos(wallAngle))
+    # Vx = sum(-H_avg * ds * np.cos(wallAngle))
     # Vy = sum(-H_avg * ds * np.sin(wallAngle))
     # T = sum(H_avg * ds * e)
 
@@ -365,6 +508,31 @@ def integrateShearFlow(H, dist, section):
     T[2, :] = ds * e                        # T
     Vx, Vy, T = np.dot(T, H_avg)
     return Vx, Vy, T
+
+def integrateWallShearForces(V, section):
+    # integrate wall shear forces into sectional shear SF 
+    Vx, Vy, T = [], [], []
+    e = section.get_e()
+
+    for i,wall in enumerate(section.walls):
+        # Integrate for shear sectional forces
+        Vx.append(-V[i] * math.cos(wall.angle) )
+        Vy.append(-V[i] * math.sin(wall.angle) )
+        T.append(  V[i] * e[i] / 1000          )
+
+    return sum(Vx), sum(Vy), sum(T)
+
+def errorFunShear2(x, section, SF):
+    # unload variables
+    V = x[:-1]
+    load_fac = x[-1]
+
+    # integrate shear forces into sectional forces
+    Vx, Vy, T = integrateWallShearForces(V, section)
+    print('wall based Integrated Vx, Vy, T: ', Vx, Vy, T)
+
+    # Section force difference (sum squared diff.)
+    return (SF.Vy*load_fac - Vy)**2 + (SF.Vx*load_fac - Vx)**2 + (SF.T*load_fac - T)**2
 
 
 def errorFunShear(x, section, SF, dist):
@@ -503,6 +671,7 @@ def dualSection(section, SF, Mat):
 
 
 def shear_flow(dist, dist2, SF, section, dx):
+    # computes the shear flowdistribution based on two normal flow distributions
     dN = (dist2['normal_flow'] - dist['normal_flow'])  # calculate normal flow difference
     dN_avg = (dN[1:] + dN[:-1]) / 2  # calculate average normal flow diff. between data points
     dH_avg = dN_avg * dist['ds'] / dx / 1000  # convert normal flow diff. to shear flow diff.
@@ -554,6 +723,7 @@ def uncracked_strain_state(section, SF):
 
 
 def BendingEQ(section, Mat, NA_angle, eps_comp, eps_tens):
+    # computes the distributions and the integrated sectional forces
 
     # Along-walls data points
     s, x, y, wallAngle = [], [], [], []  # lower case coordinates is for the local nodes

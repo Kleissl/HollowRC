@@ -23,7 +23,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>3</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -75,7 +75,7 @@
             <x>10</x>
             <y>80</y>
             <width>621</width>
-            <height>371</height>
+            <height>341</height>
            </rect>
           </property>
           <property name="font">
@@ -96,20 +96,23 @@
          <widget class="QLabel" name="label_25">
           <property name="geometry">
            <rect>
-            <x>600</x>
-            <y>630</y>
-            <width>481</width>
-            <height>21</height>
+            <x>840</x>
+            <y>620</y>
+            <width>231</width>
+            <height>31</height>
            </rect>
           </property>
           <property name="font">
            <font>
-            <pointsize>9</pointsize>
-            <italic>true</italic>
+            <pointsize>10</pointsize>
+            <italic>false</italic>
            </font>
           </property>
+          <property name="locale">
+           <locale language="English" country="Denmark"/>
+          </property>
           <property name="text">
-           <string>Written by Kenneth C. Kleissl with funding from the COWI Foundation </string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;by Kenneth C. Kleissl&lt;br/&gt;&lt;a href=&quot;https://github.com/Kleissl/HollowRC&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;www.github.com/Kleissl/HollowRC&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
@@ -121,7 +124,7 @@
             <x>10</x>
             <y>460</y>
             <width>641</width>
-            <height>191</height>
+            <height>161</height>
            </rect>
           </property>
           <property name="font">
@@ -142,10 +145,10 @@
          <widget class="QLabel" name="label_31">
           <property name="geometry">
            <rect>
-            <x>680</x>
-            <y>80</y>
+            <x>720</x>
+            <y>150</y>
             <width>321</width>
-            <height>381</height>
+            <height>281</height>
            </rect>
           </property>
           <property name="font">
@@ -154,7 +157,7 @@
            </font>
           </property>
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Axis&lt;/span&gt;&lt;br/&gt;Positive x towards right&lt;br/&gt;Positive y upward&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Geometry&lt;/span&gt;&lt;br/&gt;The section must be defined in the clock-wise direction&lt;br/&gt;Angles are taken positive in the counter-clockwise direction starting from the x-axis&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Section forces&lt;/span&gt;&lt;br/&gt;Positive Mx yields compression in the top&lt;br/&gt;Positive My yields compression on the left side&lt;br/&gt;Negative N yields compression&lt;br/&gt;Positive Vx yields shear in the x-direction (right)&lt;br/&gt;Positive Vy yields shear in the y-direction (upward)&lt;br/&gt;Positive T yields counter-clockwise shear flow&lt;br/&gt;Note that the above sign definitions follows a left hand system (LHS)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Axis&lt;/span&gt;&lt;br/&gt;- Positive x towards right&lt;br/&gt;- Positive y upward&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Geometry&lt;/span&gt;&lt;br/&gt;- The section must be defined in the clock-wise direction&lt;br/&gt;- Angles are taken positive in the counter-clockwise direction starting from the x-axis&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Section forces&lt;/span&gt;&lt;br/&gt;- Positive Mx moment yields compression in the top&lt;br/&gt;- Positive My moment yields compression on the left side&lt;br/&gt;- Negative N (normal force) yields compression&lt;br/&gt;- Positive Vx yields shear in the x-direction (right)&lt;br/&gt;- Positive Vy yields shear in the y-direction (upward)&lt;br/&gt;- Positive T (torsion) yields counter-clockwise shear flow&lt;br/&gt;Note that the above sign definitions follows a left hand system (LHS)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -187,8 +190,8 @@
          <widget class="QLabel" name="label_34">
           <property name="geometry">
            <rect>
-            <x>680</x>
-            <y>50</y>
+            <x>720</x>
+            <y>120</y>
             <width>251</width>
             <height>21</height>
            </rect>
@@ -207,8 +210,8 @@
          <widget class="QLabel" name="label_36">
           <property name="geometry">
            <rect>
-            <x>680</x>
-            <y>450</y>
+            <x>720</x>
+            <y>430</y>
             <width>101</width>
             <height>101</height>
            </rect>
@@ -220,8 +223,8 @@
          <widget class="QLabel" name="label_37">
           <property name="geometry">
            <rect>
-            <x>800</x>
-            <y>450</y>
+            <x>830</x>
+            <y>430</y>
             <width>111</width>
             <height>101</height>
            </rect>
@@ -233,8 +236,8 @@
          <widget class="QLabel" name="label_38">
           <property name="geometry">
            <rect>
-            <x>930</x>
-            <y>450</y>
+            <x>950</x>
+            <y>430</y>
             <width>111</width>
             <height>101</height>
            </rect>
@@ -550,12 +553,20 @@
                   <property name="text">
                    <string>move up</string>
                   </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/Icons/up.png</normaloff>:/Icons/up.png</iconset>
+                  </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QToolButton" name="moveDownRowButton">
                   <property name="text">
                    <string>move down</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/Icons/down.png</normaloff>:/Icons/down.png</iconset>
                   </property>
                  </widget>
                 </item>

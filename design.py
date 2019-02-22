@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'design.ui',
 # licensing of 'design.ui' applies.
 #
-# Created: Thu Feb 21 22:11:34 2019
+# Created: Fri Feb 22 10:21:01 2019
 #      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1044, 714)
+        MainWindow.resize(1044, 702)
         MainWindow.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -114,6 +114,7 @@ class Ui_MainWindow(object):
         self.label_author.setFont(font)
         self.label_author.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.Denmark))
         self.label_author.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
+        self.label_author.setOpenExternalLinks(True)
         self.label_author.setObjectName("label_author")
         self.verticalLayout_8.addWidget(self.label_author)
         self.horizontalLayout_3.addLayout(self.verticalLayout_8)
@@ -516,7 +517,6 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(9)
         self.checkBox_analSLS_1.setFont(font)
-        self.checkBox_analSLS_1.setStatusTip("")
         self.checkBox_analSLS_1.setChecked(True)
         self.checkBox_analSLS_1.setTristate(False)
         self.checkBox_analSLS_1.setObjectName("checkBox_analSLS_1")
@@ -835,6 +835,7 @@ class Ui_MainWindow(object):
         self.label_8.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-family:\'Symbol\'; font-size:large;\">g</span><span style=\" vertical-align:sub;\">c</span> = </p></body></html>", None, -1))
         self.label_28.setText(QtWidgets.QApplication.translate("MainWindow", "-       ", None, -1))
         self.label_35.setText(QtWidgets.QApplication.translate("MainWindow", "-       ", None, -1))
+        self.checkBox_analSLS_1.setStatusTip(QtWidgets.QApplication.translate("MainWindow", " Note: use linear elastic stress-strain for consistency with disk stresses", None, -1))
         self.checkBox_analSLS_1.setText(QtWidgets.QApplication.translate("MainWindow", "Plane dual-section && sigma-tau equilibrium (SLS)", None, -1))
         self.label_18.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" color:#5e5e5e;\">Note: use linear elastic stress-strain for consistency with membrane stresses</span></p></body></html>", None, -1))
         self.checkBox_analULS_1.setText(QtWidgets.QApplication.translate("MainWindow", "Plane section && optimizing tau (ULS)", None, -1))
@@ -850,8 +851,8 @@ class Ui_MainWindow(object):
         self.SectionForces_tableWidget.horizontalHeaderItem(5).setText(QtWidgets.QApplication.translate("MainWindow", "T [kNm]", None, -1))
         __sortingEnabled = self.SectionForces_tableWidget.isSortingEnabled()
         self.SectionForces_tableWidget.setSortingEnabled(False)
-        self.SectionForces_tableWidget.item(0, 0).setText(QtWidgets.QApplication.translate("MainWindow", "-15000", None, -1))
-        self.SectionForces_tableWidget.item(0, 1).setText(QtWidgets.QApplication.translate("MainWindow", "20000", None, -1))
+        self.SectionForces_tableWidget.item(0, 0).setText(QtWidgets.QApplication.translate("MainWindow", "-17000", None, -1))
+        self.SectionForces_tableWidget.item(0, 1).setText(QtWidgets.QApplication.translate("MainWindow", "21000", None, -1))
         self.SectionForces_tableWidget.item(0, 2).setText(QtWidgets.QApplication.translate("MainWindow", "0", None, -1))
         self.SectionForces_tableWidget.item(0, 3).setText(QtWidgets.QApplication.translate("MainWindow", "0", None, -1))
         self.SectionForces_tableWidget.item(0, 4).setText(QtWidgets.QApplication.translate("MainWindow", "2000", None, -1))

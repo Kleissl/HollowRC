@@ -44,7 +44,7 @@ class CrossSection:
 
     def set_wallNodeN(self, wallNodeN):
         for wall in self.walls:
-            wall.wallNodeN = wallNodeN
+            wall.set_wallNodeN(wallNodeN)
 
     def get_X(self):
         X = []
@@ -225,6 +225,10 @@ class Wall:
         self.Sy = self.midX * self.area  # 1st moment of area
         self.enclosed_area = 0.5 * (self.X[0] * self.Y[1] - self.X[1] * self.Y[0]) / 1000000  # enclosed area
 
+    def set_wallNodeN(self, wallNodeN):
+        self.wallNodeN = wallNodeN
+        self.ds = self.length / (self.wallNodeN - 1) # recalculate ds
+
     def __str__(self):
         return "member of Wall"
 
@@ -244,9 +248,7 @@ class Wall:
             stress = [sigma_x, 0, 0]
             verification = Verification.Verify(stress, Mat, self.rho_long, self.rho_trans)
             H_yield.append(verification.tau_yielding() * self.thick)
-
         return H_yield
-
 
     def integrate_dist(self, dist):
         # # define weights/eff. length for each node

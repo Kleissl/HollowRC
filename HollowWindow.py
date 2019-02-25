@@ -499,20 +499,23 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # generate plot series
         seriesC = QtCharts.QtCharts.QLineSeries()
         seriesR = QtCharts.QtCharts.QLineSeries()
-        for strain in np.linspace(-0.0035, 0.003, num=50):
+        for strain in np.linspace(-0.0035, 0.003, num=200):
             seriesC.append(strain, Mat.concreteStress(strain))
             seriesR.append(strain, Mat.reinforcementStress(strain))
         
-        # Setup chart area
+        # Setup concrete chart area
         self.chartC = QtCharts.QtCharts.QChart()
         self.chartC.addSeries(seriesC)
         self.chartC.createDefaultAxes()
+        # self.chartC.axes(orientation=QtCore.Qt.Horizontal)
+        # self.chartC.addAxis(QtCharts.QtCharts.QAbstractAxis, QtCore.Qt.Horizontal)
         self.chartC.setTitle('Concrete')
         self.chartC.legend().hide()
         self.chartC.setMargins(QtCore.QMargins(0, 0, 0, 0))
         self.chartC.setGeometry(self.graphicsViewConcrete.frameRect())
         self.chartC.setBackgroundRoundness(0)
 
+        # Setup reinforcement chart area
         self.chartR = QtCharts.QtCharts.QChart()
         self.chartR.addSeries(seriesR)
         self.chartR.createDefaultAxes()

@@ -51,7 +51,7 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
             Y = self.section.get_Y()
             T = self.section.get_thick()
             centreX, centreY = self.section.get_centre()
-            wallAngle = self.section.get_angle()
+            wallAngles = self.section.get_angles()
         except:
             print('Cannot read geometry')
             return
@@ -92,14 +92,14 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
                 X2, Y2 = X[i + 1], Y[i + 1]
 
             # prep. shaded geometry Periphery
-            PX1 = X1 + T[i] / 2 * math.sin(-wallAngle[i])
-            PY1 = Y1 + T[i] / 2 * math.cos(-wallAngle[i])
-            PX2 = X1 - T[i] / 2 * math.sin(-wallAngle[i])
-            PY2 = Y1 - T[i] / 2 * math.cos(-wallAngle[i])
-            PX3 = X2 - T[i] / 2 * math.sin(-wallAngle[i])
-            PY3 = Y2 - T[i] / 2 * math.cos(-wallAngle[i])
-            PX4 = X2 + T[i] / 2 * math.sin(-wallAngle[i])
-            PY4 = Y2 + T[i] / 2 * math.cos(-wallAngle[i])
+            PX1 = X1 + T[i] / 2 * math.sin(-wallAngles[i])
+            PY1 = Y1 + T[i] / 2 * math.cos(-wallAngles[i])
+            PX2 = X1 - T[i] / 2 * math.sin(-wallAngles[i])
+            PY2 = Y1 - T[i] / 2 * math.cos(-wallAngles[i])
+            PX3 = X2 - T[i] / 2 * math.sin(-wallAngles[i])
+            PY3 = Y2 - T[i] / 2 * math.cos(-wallAngles[i])
+            PX4 = X2 + T[i] / 2 * math.sin(-wallAngles[i])
+            PY4 = Y2 + T[i] / 2 * math.cos(-wallAngles[i])
             rect = QtGui.QPolygonF()
             rect.append(QtCore.QPointF(PX1, -PY1))
             rect.append(QtCore.QPointF(PX2, -PY2))
@@ -269,7 +269,7 @@ class MyResultView(QtWidgets.QGraphicsView):
         # unpack results dictionary
         x = Res.x
         y = Res.y
-        wallAngle = Res.wallAngle
+        wallAngles = Res.wallAngles
 
         # Styles
         bold_pencil = QtGui.QPen(QtCore.Qt.DashLine)
@@ -320,8 +320,8 @@ class MyResultView(QtWidgets.QGraphicsView):
                 scale = Res.plot_scale[j] * section_dim / max(1e-12, max(abs(Res.plot_data[j])))
                 rect = QtGui.QPolygonF() # outline polygon
                 for i in range(len(Res.x)):
-                    PX = Res.x[i] + scale * Res.plot_data[j][i] * math.sin(-wallAngle[i])
-                    PY = Res.y[i] + scale * Res.plot_data[j][i] * math.cos(-wallAngle[i])
+                    PX = Res.x[i] + scale * Res.plot_data[j][i] * math.sin(-wallAngles[i])
+                    PY = Res.y[i] + scale * Res.plot_data[j][i] * math.cos(-wallAngles[i])
                     if Res.x[i] == Res.x[i - 1] and Res.y[i] == Res.y[i - 1]:  # new wall element started
                         rect.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
                         # prepare/plot shading

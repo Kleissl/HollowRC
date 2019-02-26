@@ -17,11 +17,11 @@ class Results:
     """
     # Class variables defaults
 
-    def __init__(self, x, y, wallAngle):
+    def __init__(self, x, y, wallAngles):
         # Instance variables
         self.x = x
         self.y = y
-        self.wallAngle = wallAngle
+        self.wallAngles = wallAngles
 
         self.plot_count = 0
         self.plot_data = []

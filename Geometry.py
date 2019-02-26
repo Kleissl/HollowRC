@@ -99,14 +99,14 @@ class CrossSection:
             rho_long.append(wall.rho_long)
         return rho_long
 
-    def get_angle(self, local_data=False):
-        angle = []
+    def get_angles(self, local_data=False):
+        angles = []
         for wall in self.walls:
-            angle.append(wall.angle)
+            angles.append(wall.angle)
         if local_data:
-            return np.repeat(angle, self.walls[0].wallNodeN)
+            return np.repeat(angles, self.walls[0].wallNodeN) # presumes same wallNodeN for all walls
         else:
-            return angle
+            return angles
 
     def get_centre(self):
         wallArea = []

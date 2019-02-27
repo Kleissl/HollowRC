@@ -237,22 +237,33 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # print(Geometry)
         print('SF: ' + SF.print_str())
 
-        # Call analysis
-        if self.checkBox_analSLS_1.isChecked():
-            string = self.checkBox_analSLS_1.text()
-            self.statusbar.showMessage(string + ' analysis initiated')
-            self.Res, error_msg = Analysis.dualSection(section, SF, Mat)
-            self.load_fac_label.setText('No load-factor currently applied')  # <-- might not be needed
-            self.statusbar.showMessage(string + ' analysis completed')
-        elif self.checkBox_analULS_1.isChecked():
-            string = self.checkBox_analULS_1.text()
-            self.statusbar.showMessage(string + ' analysis initiated')
-            self.Res, error_msg = Analysis.planeSection(section, SF, Mat)
-            self.statusbar.showMessage(string + ' analysis completed')
+        try:
+            # Call analysis
+            if self.checkBox_analSLS_1.isChecked():
+                # execute SLS analysis
+                string = self.checkBox_analSLS_1.text()
+                self.statusbar.showMessage(string + ' analysis initiated')
+                self.Res = Analysis.SLS_analysis(section, SF, Mat)
+                error_msg = None # errors are now passed as exceptions
+                self.load_fac_label.setText('No load-factor currently applied')  # <-- might not be needed
+                self.statusbar.showMessage(string + ' analysis completed')
+            elif self.checkBox_analULS_1.isChecked():
+                # execute ULS analysis
+                string = self.checkBox_analULS_1.text()
+                self.statusbar.showMessage(string + ' analysis initiated')
+                self.Res, error_msg = Analysis.planeSection(section, SF, Mat)
+                self.statusbar.showMessage(string + ' analysis completed')
+            else:
+                self.Res = None
+                error_msg = 'No analysis method is checked'
+                self.load_fac_label.setText('')
+        except Analysis.MyOptimizerError as e:
+            # caught a MyOptimizerError exception
+            self.show_msg_box([str(e), e.discription])
+            error_msg = None
         else:
-            self.Res = None
-            error_msg = 'No analysis method is checked'
-            self.load_fac_label.setText('')
+            # no MyOptimizerError exception
+            self.load_fac_label.setText('No load-factor currently applied')
 
         # Show message
         if error_msg:

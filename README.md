@@ -37,13 +37,16 @@ Axes:
 * Positive x towards right
 * Positive y upward
 * The sign convention generally follows a left hand system (LHS)
+
 Geometry:
 * All dimension are in millimeters
 * The section must be defined in the clock-wise direction
 * Angles are taken positive in the counter-clockwise direction starting from the x-axis
+
 Flows & Stresses:
 * Normal flow and normal stress are positive for tension
 * Shear flow is positive in the counter-clockwise direction
+
 Section forces:
 * Positive Mx moment yields compression in the top
 * Positive My moment yields compression on the left side

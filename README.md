@@ -25,9 +25,9 @@ For ULS a classic plane section analysis is performed and from its normal flow d
 
 ### Assumptions and limitations
 The implementation is based on the following assumptions:
-- The span to depth ratio of the section is sufficient for beam theory to be applicable where plane section analysis approach is considered.
-- The walls are sufficient thin, compared to the cross-section dimensions, for a thin-walled approach to be applicable.
-- Normal stresses in the circumferential direction are neglected even though equilibrium in principle requires the presence of these. This is a common approach when analysing thin-walled sections.
+* The span to depth ratio of the section is sufficient for beam theory to be applicable where plane section analysis approach is considered.
+* The walls are sufficient thin, compared to the cross-section dimensions, for a thin-walled approach to be applicable.
+* Normal stresses in the circumferential direction are neglected even though equilibrium in principle requires the presence of these. This is a very common approach when analysing thin-walled sections.
 
 ## Documentation
 Further documention with figures etc. will follow...
@@ -42,6 +42,7 @@ Geometry:
 * All dimension are in millimeters
 * The section must be defined in the clock-wise direction
 * Angles are taken positive in the counter-clockwise direction starting from the x-axis
+* Reinforcement ratios are defined as the stee-to-concrete ratio (e.g. 0.01 = 1%)
 
 Flows & Stresses:
 * Normal flow and normal stress are positive for tension

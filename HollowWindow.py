@@ -237,6 +237,8 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         # print(Geometry)
         print('SF: ' + SF.print_str())
 
+        # set mouse cursor to WaitCursor
+        self.setCursor(QtCore.Qt.WaitCursor)
         try:
             # Call analysis
             if self.checkBox_analSLS_1.isChecked():
@@ -273,6 +275,9 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
 
         # update result plot
         self.refresh_plots()
+
+        # return mouse cursor to normal ArrowCursor
+        self.setCursor(QtCore.Qt.ArrowCursor)
 
     def toggle_menu(self, state):
         if state:

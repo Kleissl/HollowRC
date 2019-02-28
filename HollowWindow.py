@@ -253,7 +253,7 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
                 # execute ULS analysis
                 string = self.checkBox_analULS_1.text()
                 self.statusbar.showMessage(string + ' analysis initiated')
-                self.Res, error_msg = Analysis.planeSection(section, SF, Mat)
+                self.Res, error_msg = Analysis.ULS_analysis(section, SF, Mat)
                 self.statusbar.showMessage(string + ' analysis completed')
             else:
                 self.Res = None

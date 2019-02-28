@@ -44,7 +44,7 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
 
 
         # version tag and label
-        self.tag = 'v1.1'
+        self.tag = 'v1.2'
         self.label_version.setText(self.tag)
 
         # --- Triggers --- (interactive elements such as actions and buttons with a custom function)

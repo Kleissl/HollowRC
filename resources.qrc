@@ -1,13 +1,16 @@
 <RCC>
   <qresource prefix="Icons">
-    <file>down.png</file>
-    <file>up.png</file>
-    <file>add.png</file>
-    <file>minus.png</file>
+    <file>resources/down_icon.png</file>
+    <file>resources/up_icon.png</file>
+    <file>resources/add_icon.png</file>
+    <file>resources/minus_icon.png</file>
+    <file>resources/Open_icon.png</file>
+    <file>resources/Save_icon.png</file>
+    <file>resources/Exit_icon.png</file>
   </qresource>
   <qresource prefix="Figures">
-    <file>coordinates.PNG</file>
-    <file>force_sign_convention.PNG</file>
-    <file>moment_sign_convention.PNG</file>
+    <file>resources/coordinates.PNG</file>
+    <file>resources/force_sign_convention.PNG</file>
+    <file>resources/moment_sign_convention.PNG</file>
   </qresource>
 </RCC>

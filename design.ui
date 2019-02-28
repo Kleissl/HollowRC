@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1101</width>
-    <height>765</height>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -197,7 +197,7 @@
                 <item row="0" column="1">
                  <widget class="QLabel" name="label_moment_sign">
                   <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/moment_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/moment_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -207,7 +207,7 @@
                 <item row="0" column="2">
                  <widget class="QLabel" name="label_coord_axis">
                   <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/coordinates.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/coordinates.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -217,7 +217,7 @@
                 <item row="0" column="3">
                  <widget class="QLabel" name="label_shear_sign">
                   <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/force_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/force_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -534,7 +534,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="resources.qrc">
-                    <normaloff>:/Icons/add.png</normaloff>:/Icons/add.png</iconset>
+                    <normaloff>:/Icons/resources/add_icon.png</normaloff>:/Icons/resources/add_icon.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -548,7 +548,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="resources.qrc">
-                    <normaloff>:/Icons/minus.png</normaloff>:/Icons/minus.png</iconset>
+                    <normaloff>:/Icons/resources/minus_icon.png</normaloff>:/Icons/resources/minus_icon.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -562,7 +562,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="resources.qrc">
-                    <normaloff>:/Icons/up.png</normaloff>:/Icons/up.png</iconset>
+                    <normaloff>:/Icons/resources/up_icon.png</normaloff>:/Icons/resources/up_icon.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -576,7 +576,7 @@
                   </property>
                   <property name="icon">
                    <iconset resource="resources.qrc">
-                    <normaloff>:/Icons/down.png</normaloff>:/Icons/down.png</iconset>
+                    <normaloff>:/Icons/resources/down_icon.png</normaloff>:/Icons/resources/down_icon.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -1605,6 +1605,9 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -1618,11 +1621,21 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="openAct">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/resources/Open_icon.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Open</string>
    </property>
   </action>
   <action name="saveAct">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/resources/Save_icon.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Save</string>
    </property>
@@ -1631,6 +1644,10 @@
    </property>
   </action>
   <action name="exitAct">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/Icons/resources/Exit_icon.png</normaloff>:/Icons/resources/Exit_icon.png</iconset>
+   </property>
    <property name="text">
     <string>Exit</string>
    </property>

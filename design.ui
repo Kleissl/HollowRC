@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>Hollow section analysis tool</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/Icons/resources/Icon.png</normalon>
+   </iconset>
+  </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
   </property>

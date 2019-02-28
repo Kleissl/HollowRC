@@ -7,6 +7,7 @@
     <file>resources/Open_icon.png</file>
     <file>resources/Save_icon.png</file>
     <file>resources/Exit_icon.png</file>
+    <file>resources/Icon.png</file>
   </qresource>
   <qresource prefix="Figures">
     <file>resources/coordinates.PNG</file>

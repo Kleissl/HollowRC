@@ -14,20 +14,22 @@ However, with the basic assumption of linear-elastic material behaviour being un
 To make this analysis method more approachable, this easy to use application has been developed.
 
 ### Service Limit State
-This design tool will provide designers with a superior insight into the actual stress state during Service Limit State (SLS), including the shear or torsion induced stresses in the transverse reinforcement (in the circumferential direction), and will completely avoid any superposition of plastic lower bound methods from the diagonal truss model, additional shear-induced demand for longitudinal reinforcement and the corresponding strain incompatibilities introduced by separating shear and bending analysis.
+This design tool provides designers with a superior insight into the actual stress state during Service Limit State (SLS), including the shear or torsion induced stresses in the transverse reinforcement (in the circumferential direction), and will completely avoid any superposition of plastic lower bound methods from the diagonal truss model, additional shear-induced demand for longitudinal reinforcement and the corresponding strain incompatibilities introduced by separating shear and bending analysis.
 For SLS the actual shear flow is determined based on a plane dual-section analysis, which just means that two nabouring plane-sections are analysed and from their differences in normal flow, simple equilibrium yields the corresponding shear flow distribution.
 So only by applying the fundamental flexural member assumption of plane sections must remain plane combined with basic equilibrium equations can the actual normal and shear flow distributions be determined.
 From this an in-plane membrane analysis is used to determined the reinforcement stresses etc. by choosing the resulting compressive stress direction / strut angle such that it minimizes the complementary strain energy (similar to fulfilling compatibility).
 
 ### Ultimate Limit State
-For Ultimate Limit State (ULS) this design tool will allow designers to push the capacity of the cross-section even further, as it by use of mathematical optimization algorithms are able to identify the true optimal plastic lower-bound solution that fully utilize the strength of the materials.
+For Ultimate Limit State (ULS) this design tool allow designers to push the capacity of the cross-section even further, as it by use of mathematical optimization algorithms are able to identify the true optimal plastic lower-bound solution that fully utilize the strength of the materials.
 For ULS a classic plane section analysis is performed and from its normal flow distribution, an in-plane membrane analysis considering the yield conditions determines the leftover shear flow capacity at any given point along the cross-section, which then is integrated into a shear force capacity for each of the cross-sectional wall elements. Finally this is followed up by solving the optimization problem of maximizing the load-factor while maintaining equalibrium between the wall shear forces and the user specified global sectional forces.
 
 ### Assumptions and limitations
 The implementation is based on the following assumptions:
 * The span to depth ratio of the section is sufficient for beam theory to be applicable where plane section analysis approach is considered.
 * The walls are sufficient thin, compared to the cross-section dimensions, for a thin-walled approach to be applicable.
-* Normal stresses in the circumferential direction are neglected even though equilibrium in principle requires the presence of these. This is a very common approach when analysing thin-walled sections.
+* Normal stresses in the circumferential direction are neglected even though equilibrium in principle requires the presence of these (this is a very common approach when analysing thin-walled sections).
+* Sufficient minimum reinforcement to provide the nesessary ductility capacity for plastic redistribution.
+* Does not cover instabilities or shear lag effects.
 
 ## Documentation
 Further documention with figures etc. will follow...

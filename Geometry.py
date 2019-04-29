@@ -171,10 +171,33 @@ class CrossSection:
         # returns a list of wall yield shear forces 
         return [wall.get_yield_shear_force(Mat) for wall in self.walls]
 
-    # Second Moment of Area
-    #Ix.append(wallLength[i]*T[i]/12 * ( wallLength[i]**2 * math.cos(wallAngle[i])**2 + T[i]**2 * math.sin(wallAngle[i])**2 ))
-    #Ix.append(wallLength[i] * T[i] / 12 * (
-    #            T[i] ** 2 * math.cos(wallAngle[i]) ** 2 + wallLength[i] ** 2 * math.sin(wallAngle[i]) ** 2)) + wallArea[i] *
+    def get_area(self):
+        '''
+        Computed the Area
+        '''
+        area = []
+        for wall in self.walls:
+            area.append( wall.area )            
+        return sum(area)
+
+    def get_Ix_Iy(self):
+        '''
+        Computed the Second Moment of Areas
+        '''
+        # Initiates Second Moment of Areas
+        Ix, Iy = [], []
+
+        # get centre coordinates
+        centreX, centreY = self.get_centre()
+
+        for wall in self.walls:
+            Ix.append( wall.get_Ix() + wall.area*(wall.midY - centreY)**2 )
+            Iy.append( wall.get_Iy() + wall.area*(wall.midX - centreX)**2 )
+            
+        print('Ix:', Ix)
+        print('Iy:', Iy)            
+        # Sum wall contributions
+        return sum(Ix), sum(Iy)
 
     @staticmethod
     def point_line_dist(x0, y0, x1, y1, x2, y2):
@@ -260,6 +283,24 @@ class Wall:
         # Integrate distribution
         integration = sum([0.5 * self.ds * dist[i] if i in (0, self.wallNodeN - 1) else self.ds * dist[i] for i, value in enumerate(dist)])
         return integration
+
+    def get_Ix(self):
+        # Second Moment of Area about horizontal axis
+        if self.dY:
+            X_width = self.area/abs(self.dY)
+            Ix = 1/12 * X_width * abs(self.dY)**3
+        else:
+            Ix = 0
+        return Ix
+
+    def get_Iy(self):
+        # Second Moment of Area about vertical axis
+        if self.dX:
+            Y_width = self.area/abs(self.dX)
+            Iy = 1/12 * Y_width * abs(self.dX)**3
+        else:
+            Iy = 0
+        return Iy
 
 # For when this script is excetuted on its own
 if __name__ == '__main__':

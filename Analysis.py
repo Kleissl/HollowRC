@@ -391,7 +391,7 @@ def dualSection(section, SF, Mat):
 # perform a single plane section analysis
 def planeSection(section, SF, Mat):
     # --------------- Initial guess of optimization variables based on uncracked analysis ---------------
-    x0 = uncracked_strain_state(section, SF)
+    x0 = uncracked_strain_state(section, SF, Mat)
 
     # --------------- Determine the plane strain section for the primary section ---------------
     x = bendingSolution(x0, section, SF, Mat)
@@ -402,20 +402,32 @@ def planeSection(section, SF, Mat):
     return x, dist
 
 
-def uncracked_strain_state(section, SF):
-    # NA_angle = -11.56       # angle of NA relative to horizontal (positive counter-clockwise)
-    # eps_comp = - 1.397e-03  # strain in extreme compression fiber
-    # eps_tens = 2.923e-03    # strain in extreme tension fiber
+def uncracked_strain_state(section, SF, Mat):
+    '''
+    Computes initial strain guess based on linear uncracked concrete sectional analysis
+    '''
+    # uncreaced bending stiffnesses
+    Ix, Iy = section.get_Ix_Iy()
 
-    # bending moment angle (loading angle, not NA angle!)
-    load_angle = math.degrees(math.atan2(SF.Mz, SF.My)) # SIGN might need to change this also?
+    # uncracked NA angle relative to horizontal (positive counter-clockwise)
+    NA_angle = math.degrees(math.atan2(-SF.Mz/Iy, SF.My/Ix))
 
-    NA_angle = load_angle       # angle of NA relative to horizontal (positive counter-clockwise)
-    eps_comp = - 1.5e-03  # strain in extreme compression fiber
-    eps_tens = 3.0e-03    # strain in extreme tension fiber
+    # get centre coordinates
+    centreX, centreY = section.get_centre()
+
+    # extreme compression/tension fibers
+    eps = []
+    for wall in section.walls:      # looping over walls
+        eps_y = SF.My/(Mat.E_cm*Ix) * (wall.Y[0] - centreY) * 10**3
+        eps_z = SF.Mz/(Mat.E_cm*Iy) * (wall.X[0] - centreX) * 10**3
+        eps_x = SF.N/(Mat.E_cm*section.get_area())
+        eps.append( eps_y + eps_z + eps_x )
+    eps_comp = min(eps) # strain in extreme compression fiber
+    eps_tens = max(eps) # strain in extreme tension fiber
+
     x0 = np.array([NA_angle, eps_comp, eps_tens])  # initial guess
+    print('Initial strain guess =', x0)
     return x0
-    # SHOULD INSTEAD ESTIMATE THIS BY UNCRACKED SECTIONAL ANALYSIS
     
 
 def shear_flow(dist, dist2, SF, section, dx):

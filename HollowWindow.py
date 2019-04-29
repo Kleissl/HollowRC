@@ -474,10 +474,10 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         table = self.SectionForces_tableWidget
         row_values = self.get_table_row(table, 0)
 
-        N, Mx, My, Vx, Vy, T = row_values
+        N, My, Mz, Vy, Vz, T = row_values
 
         # Dump into SectionForces class
-        SF = SectionForces.SectionForces(N, Mx, My, Vx, Vy, T)
+        SF = SectionForces.SectionForces(N, My, Mz, Vy, Vz, T)
 
         # print("Section forces table data loaded")
         self.statusbar.showMessage('Section forces table data loaded')
@@ -487,8 +487,8 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         table = self.SectionForces_tableWidget
         table.removeRow(0)                      # are lossing the row name 'LC' to the left!!!!
         table.insertRow(0)
-        N, Mx, My, Vx, Vy, T = SF.N, SF.Mx, SF.My, SF.Vx, SF.Vy, SF.T
-        for col, value in enumerate([N, Mx, My, Vx, Vy, T]):
+        N, My, Mz, Vy, Vz, T = SF.N, SF.My, SF.Mz, SF.Vy, SF.Vz, SF.T
+        for col, value in enumerate([N, My, Mz, Vy, Vz, T]):
                 table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
 
     def get_table_row(self, table, row):

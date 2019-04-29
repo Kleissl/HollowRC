@@ -33,27 +33,24 @@ The implementation is based on the following assumptions:
 Further documention with figures etc. will follow...
 
 ### Sign convention
-Axes:
-* Positive x towards right
-* Positive y upward
-* The sign convention generally follows a left hand system (LHS)
+The sign convention generally follows a right hand system (RHS). See illustration in figure below.
 
 Geometry:
-* All dimension are in millimeters
-* The section must be defined in the clock-wise direction
-* Angles are taken positive in the counter-clockwise direction starting from the x-axis
-* Reinforcement ratios are defined as the stee-to-concrete ratio (e.g. 0.01 = 1%)
+* All dimensions are in millimeters
+* The section walls must be defined in the clock-wise direction
+* Angles are taken positive in the counter-clockwise direction starting from the y-axis
+* Reinforcement ratios are defined as the steel-to-concrete ratio (e.g. 0.01 = 1%)
 
 Flows & Stresses:
 * Normal flow and normal stress are positive for tension
 * Shear flow is positive in the counter-clockwise direction
 
 Section forces:
-* Positive Mx moment yields compression in the top
-* Positive My moment yields compression on the left side
+* Positive My moment yields compression in the top
+* Positive Mz moment yields compression on the right side
 * Negative N (normal force) yields compression
-* Positive Vx yields shear in the x-direction (right)
-* Positive Vy yields shear in the y-direction (upward)
+* Positive Vy yields shear in the y-direction (right)
+* Positive Vz yields shear in the z-direction (upward)
 * Positive T (torsion) yields counter-clockwise shear flow
 
 ## Issues

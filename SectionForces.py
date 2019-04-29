@@ -14,10 +14,10 @@ class SectionForces:
 
     Attributes:
         N:  Normal force (neg. = compression)
-        Mx: Bending moment about the x-axis
         My: Bending moment about the y-axis
-        Vx: Shear force in the x-axis
+        Mz: Bending moment about the z-axis
         Vy: Shear force in the y-axis
+        Vz: Shear force in the z-axis
         T:  Torsional moment
     """
     # Class variables
@@ -26,21 +26,21 @@ class SectionForces:
     fac_bending = load_factor
     fac_shear = load_factor
 
-    def __init__(self, N, Mx, My, Vx=None, Vy=None, T=None):
+    def __init__(self, N, My, Mz, Vy=None, Vz=None, T=None):
         # Instance variables
         self.N = N * self.fac_bending
-        self.Mx = Mx * self.fac_bending
         self.My = My * self.fac_bending
-
-        if Vx:
-            self.Vx = Vx * self.fac_shear
-        else:
-            self.Vx = Vx
+        self.Mz = Mz * self.fac_bending
 
         if Vy:
             self.Vy = Vy * self.fac_shear
         else:
             self.Vy = Vy
+
+        if Vz:
+            self.Vz = Vz * self.fac_shear
+        else:
+            self.Vz = Vz
 
         if T:
             self.T = T * self.fac_shear
@@ -53,19 +53,19 @@ class SectionForces:
         self.load_factor = fac
 
     def print_str(self):
-        string = 'N=' + str(self.N) + ', Mx=' + str(self.Mx) + ', My=' + str(self.My) \
-                 + ', Vx=' + str(self.Vx) + ', Vy=' + str(self.Vy) + ', T=' + str(self.T)
+        string = 'N=' + str(self.N) + ', My=' + str(self.My) + ', Mz=' + str(self.Mz) \
+                 + ', Vy=' + str(self.Vy) + ', Vz=' + str(self.Vz) + ', T=' + str(self.T)
         return string
 
 
 # For when this script is excetuted on its own
 if __name__ == '__main__':
     N = -20000
-    Mx = 60000
-    My = -10000
-    Vx = 0
-    Vy = 2000
+    My = 60000
+    Mz = -10000
+    Vy = 0
+    Vz = 2000
     T = 0
-    SF = SectionForces(N, Mx, My, Vx, Vy, T)
+    SF = SectionForces(N, My, Mz, Vy, Vz, T)
     print(SF.My)
 

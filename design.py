@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'design.ui',
 # licensing of 'design.ui' applies.
 #
-# Created: Thu Feb 28 15:17:00 2019
+# Created: Mon Apr 29 20:53:15 2019
 #      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1101, 768)
+        MainWindow.resize(1031, 775)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/resources/Icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         MainWindow.setWindowIcon(icon)
@@ -83,7 +83,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_right_text.sizePolicy().hasHeightForWidth())
         self.label_right_text.setSizePolicy(sizePolicy)
-        self.label_right_text.setMinimumSize(QtCore.QSize(325, 270))
+        self.label_right_text.setMinimumSize(QtCore.QSize(325, 280))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.label_right_text.setFont(font)
@@ -93,21 +93,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.addWidget(self.label_right_text)
         spacerItem2 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.verticalLayout_8.addItem(spacerItem2)
-        self.gridLayout_2 = QtWidgets.QGridLayout()
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.label_moment_sign = QtWidgets.QLabel(self.tab_about)
-        self.label_moment_sign.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_moment_sign.setObjectName("label_moment_sign")
-        self.gridLayout_2.addWidget(self.label_moment_sign, 0, 1, 1, 1)
-        self.label_coord_axis = QtWidgets.QLabel(self.tab_about)
-        self.label_coord_axis.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_coord_axis.setObjectName("label_coord_axis")
-        self.gridLayout_2.addWidget(self.label_coord_axis, 0, 2, 1, 1)
-        self.label_shear_sign = QtWidgets.QLabel(self.tab_about)
-        self.label_shear_sign.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_shear_sign.setObjectName("label_shear_sign")
-        self.gridLayout_2.addWidget(self.label_shear_sign, 0, 3, 1, 1)
-        self.verticalLayout_8.addLayout(self.gridLayout_2)
+        self.label_24 = QtWidgets.QLabel(self.tab_about)
+        self.label_24.setText("")
+        self.label_24.setPixmap(QtGui.QPixmap(":/Figures/resources/coordinates_and_sign_convention.PNG"))
+        self.label_24.setObjectName("label_24")
+        self.verticalLayout_8.addWidget(self.label_24)
         spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_8.addItem(spacerItem3)
         self.label_author = QtWidgets.QLabel(self.tab_about)
@@ -720,7 +710,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1101, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1031, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -766,10 +756,7 @@ class Ui_MainWindow(object):
         self.label_heading.setText(QtWidgets.QApplication.translate("MainWindow", "General Design of Hollow RC Sections under Combined Actions", None, -1))
         self.label_left_text.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">About</span></p><p><span style=\" font-size:8pt;\">This is an easy to use design tool for analysis of hollow reinforced concrete sections under combined loading, fully embracing the interactions between bending and shear behaviour.<br/>To propor describe the interaction between the flow of normal stesses and shear stress and to fully utilize the capacity of the cross-section one must leave the simplfied approach of the diagonal truss model.<br/>For a linear-elastic material one could apply the Grashof\'s formula, similar to analysis of thin-walled steel-sections, to determining shear flow etc. <br/>However, with the basic assumption of linear-elastic material behaviour being unsuitable for reinforced concrete, a more numerical extensive approach involving a series of optimization routines needs to be adopted.<br/>To make this analysis method more approachable, this easy to use application has been developed.</span></p><p><span style=\" font-size:8pt;\">This design tool will provide designers with a superior insight into the actual stress state during Service Limit State (SLS), including the shear or torsion induced stresses in the transverse reinforcement (in the circumferential direction), and will completely avoid any superposition of plastic lower bound methods from the diagonal truss model, additional shear-induced demand for longitudinal reinforcement and the corresponding strain incompatibilities introduced by separating shear and bending analysis.<br/>For SLS the actual shear flow is determined based on a plane dual-section analysis, which just means that two nabouring plane-sections are analysed and from their differences in normal flow, simple equilibrium yields the corresponding shear flow distribution.<br/>So only by applying the fundamental flexural member assumption of plane sections must remain plane combined with basic equilibrium equations can the actual normal and shear flow distributions be determined.<br/>From this an in-plane membrane analysis is used to determined the reinforcement stresses etc. by choosing the resulting compressive stress direction / strut angle such that it minimizes the complementary strain energy (similar to fulfilling compatibility).</span></p><p><span style=\" font-size:8pt;\">For Ultimate Limit State (ULS) this design tool will allow designers to push the capacity of the cross-section even further, as it by use of mathematical optimization algorithms are able to identify the true optimal plastic lower-bound solution that fully utilize the strength of the materials.<br/>For ULS a classic plane section analysis is performed and from its normal flow distribution, an in-plane membrane analysis considering the yield conditions determines the leftover shear flow capacity at any given point along the cross-section, which then is integrated into a shear force capacity for each of the cross-sectional wall elements. Finally this is followed up by solving the optimization problem of maximizing the load-factor while maintaining equalibrium between the wall shear forces and the user specified global sectional forces.</span></p><p><span style=\" font-weight:600;\">Assumptions and limitations:</span></p><p><span style=\" font-size:8pt;\">- The span to depth ratio of the section is sufficient for beam theory to be applicable where plane section analysis approach is considered.<br/>- The walls are sufficient thin, compared to the cross-section dimensions, for a thin-walled approach to be applicable.<br/>- Normal stresses in the circumferential direction are neglected even though equilibrium in principle requires the presence of these. This is a very common approach when analysing thin-walled sections.</span></p></body></html>", None, -1))
         self.label_version.setText(QtWidgets.QApplication.translate("MainWindow", "v1.0", None, -1))
-        self.label_right_text.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">Sign convention</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Axes</span><span style=\" font-size:8pt;\"><br/>- Positive x towards right<br/>- Positive y upward<br/>- The sign convention generally follows a left hand system (LHS)</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Geometry</span><span style=\" font-size:8pt;\"><br/>- All dimension are in millimeters<br/>- The section must be defined in the clock-wise direction<br/>- Angles are taken positive in the counter-clockwise direction starting from the x-axis<br/>- Reinforcement ratios are defined as the stee-to-concrete ratio (e.g. 0.01 = 1%)</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Flows &amp; Stresses</span><span style=\" font-size:8pt;\"><br/>- Normal flow and normal stress are positive for tension<br/>- Shear flow is positive in the counter-clockwise direction</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Section forces</span><span style=\" font-size:8pt;\"><br/>- Positive Mx moment yields compression in the top<br/>- Positive My moment yields compression on the left side<br/>- Negative N (normal force) yields compression<br/>- Positive Vx yields shear in the x-direction (right)<br/>- Positive Vy yields shear in the y-direction (upward)<br/>- Positive T (torsion) yields counter-clockwise shear flow</span></p></body></html>", None, -1))
-        self.label_moment_sign.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><img src=\":/Figures/resources/moment_sign_convention.PNG\"/></p></body></html>", None, -1))
-        self.label_coord_axis.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><img src=\":/Figures/resources/coordinates.PNG\"/></p></body></html>", None, -1))
-        self.label_shear_sign.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><img src=\":/Figures/resources/force_sign_convention.PNG\"/></p></body></html>", None, -1))
+        self.label_right_text.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-weight:600;\">Sign convention</span></p><p><span style=\" font-size:8pt;\">The sign convention generally follows a right hand system (RHS). See illustration in figure below.</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Geometry</span><span style=\" font-size:8pt;\"><br/>- All dimensions are in millimeters<br/>- The section walls must be defined in the clock-wise direction<br/>- Angles are taken positive in the counter-clockwise direction starting from the y-axis<br/>- Reinforcement ratios are defined as the steel-to-concrete ratio (e.g. 0.01 = 1%)</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Flows &amp; Stresses</span><span style=\" font-size:8pt;\"><br/>- Normal flow and normal stress are positive for tension<br/>- Shear flow is positive in the counter-clockwise direction</span></p><p><span style=\" font-size:8pt; text-decoration: underline;\">Section forces</span><span style=\" font-size:8pt;\"><br/>- Positive My moment yields compression in the top<br/>- Positive Mz moment yields compression on the right side<br/>- Negative N (normal force) yields compression<br/>- Positive Vy yields shear in the y-direction (right)<br/>- Positive Vz yields shear in the z-direction (upward)<br/>- Positive T (torsion) yields counter-clockwise shear flow</span></p></body></html>", None, -1))
         self.label_author.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p align=\"right\">by Kenneth C. Kleissl<br/><a href=\"https://github.com/Kleissl/HollowRC\"><span style=\" text-decoration: underline; color:#0000ff;\">www.github.com/Kleissl/HollowRC</span></a></p></body></html>", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_about), QtWidgets.QApplication.translate("MainWindow", "About", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p>Define starting coordinates and properties of each wall element here:</p></body></html>", None, -1))
@@ -778,8 +765,8 @@ class Ui_MainWindow(object):
         self.coordinates_tableWidget.verticalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Node no. 2", None, -1))
         self.coordinates_tableWidget.verticalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "Node no. 3", None, -1))
         self.coordinates_tableWidget.verticalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Node no. 4", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("MainWindow", "X-coordinate", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Y-coordinate", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("MainWindow", "Y-coordinate", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Z-coordinate", None, -1))
         self.coordinates_tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "Wall thickness", None, -1))
         self.coordinates_tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Reinf. ratio long.", None, -1))
         self.coordinates_tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("MainWindow", "Reinf. ratio trans.", None, -1))
@@ -857,10 +844,10 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_materials), QtWidgets.QApplication.translate("MainWindow", "Materials && Analysis", None, -1))
         self.SectionForces_tableWidget.verticalHeaderItem(0).setText(QtWidgets.QApplication.translate("MainWindow", "LC", None, -1))
         self.SectionForces_tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("MainWindow", "N [kN]", None, -1))
-        self.SectionForces_tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Mx [kNm]", None, -1))
-        self.SectionForces_tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "My [kNm]", None, -1))
-        self.SectionForces_tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Vx [kN]", None, -1))
-        self.SectionForces_tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("MainWindow", "Vy [kN]", None, -1))
+        self.SectionForces_tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "My [kNm]", None, -1))
+        self.SectionForces_tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "Mz [kNm]", None, -1))
+        self.SectionForces_tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Vy [kN]", None, -1))
+        self.SectionForces_tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("MainWindow", "Vz [kN]", None, -1))
         self.SectionForces_tableWidget.horizontalHeaderItem(5).setText(QtWidgets.QApplication.translate("MainWindow", "T [kNm]", None, -1))
         __sortingEnabled = self.SectionForces_tableWidget.isSortingEnabled()
         self.SectionForces_tableWidget.setSortingEnabled(False)
@@ -896,7 +883,7 @@ class Ui_MainWindow(object):
         self.exitAct.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Exit application", None, -1))
         self.exitAct.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Q", None, -1))
 
-from Plots import MyGeometryView, MyResultView
+from Plots import MyResultView, MyGeometryView
 import resources_rc
 
 if __name__ == "__main__":

@@ -149,7 +149,7 @@ def ULS_analysis(section, SF, Mat):
         # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
         #          str(xopt[-1])]
 
-    print('Integration test Vx, Vy, T: ', integrateShearFlow(H, dist, section))
+    print('Integration test Vy, Vz, T: ', integrateShearFlow(H, dist, section))
 
     return Res, error_msg
 
@@ -160,11 +160,11 @@ def errorFunShear2(x, section, SF):
     load_fac = x[-1]
 
     # integrate shear forces into sectional forces
-    Vx, Vy, T = integrateWallShearForces(V, section)
-    print('wall based Integrated Vx, Vy, T: ', Vx, Vy, T)
+    Vy, Vz, T = integrateWallShearForces(V, section)
+    print('wall based Integrated Vy, Vz, T: ', Vy, Vz, T)
 
     # Section force difference (sum squared diff.)
-    return (SF.Vy*load_fac - Vy)**2 + (SF.Vx*load_fac - Vx)**2 + (SF.T*load_fac - T)**2
+    return (SF.Vz*load_fac - Vz)**2 + (SF.Vy*load_fac - Vy)**2 + (SF.T*load_fac - T)**2
 
 
 
@@ -177,11 +177,11 @@ def myShearConstraints2(result, x, grad, section, SF):  # constrain function for
     load_fac = x[-1]
 
     # integrate wall shear forces into sectional forces
-    Vx, Vy, T = integrateWallShearForces(V, section)
+    Vy, Vz, T = integrateWallShearForces(V, section)
 
     # Section force difference
-    result[0] = SF.Vx * load_fac - Vx
-    result[1] = SF.Vy * load_fac - Vy
+    result[0] = SF.Vy * load_fac - Vy
+    result[1] = SF.Vz * load_fac - Vz
     result[2] = SF.T  * load_fac - T
 
     if grad.size > 0:
@@ -195,8 +195,8 @@ def myShearConstraints2(result, x, grad, section, SF):  # constrain function for
             grad[2, i] = - e[i] / 1000
 
         # load factor gradient
-        grad[0, -1] = SF.Vx
-        grad[1, -1] = SF.Vy
+        grad[0, -1] = SF.Vy
+        grad[1, -1] = SF.Vz
         grad[2, -1] = SF.T
 
         # # check gradient matrix by finite-difference
@@ -228,11 +228,11 @@ def constrain_function2(x, section, SF):  # constrain function to be used with f
     load_fac = x[-1]
 
     # integrate shear flow into sectional forces
-    Vx, Vy, T = integrateWallShearForces(V, section)
+    Vy, Vz, T = integrateWallShearForces(V, section)
 
     # Section force difference (sum squared diff.)
-    result = [SF.Vx * load_fac - Vx,
-              SF.Vy * load_fac - Vy,
+    result = [SF.Vy * load_fac - Vy,
+              SF.Vz * load_fac - Vz,
               SF.T * load_fac - T]
     return result
 
@@ -267,24 +267,24 @@ def integrateShearFlow(H, dist, section):
 
     # Integration matrix
     T = np.zeros(shape=(3, len(H) - 1))
-    T[0, :] = - ds * np.cos(wallAngles)      # Vx (negative as geometry is define opposite positive flow)
-    T[1, :] = - ds * np.sin(wallAngles)      # Vy (negative as geometry is define opposite positive flow)
+    T[0, :] = - ds * np.cos(wallAngles)      # Vy (negative as geometry is define opposite positive flow)
+    T[1, :] = - ds * np.sin(wallAngles)      # Vz (negative as geometry is define opposite positive flow)
     T[2, :] = ds * e                        # T
-    Vx, Vy, T = np.dot(T, H_avg)
-    return Vx, Vy, T
+    Vy, Vz, T = np.dot(T, H_avg)
+    return Vy, Vz, T
 
 def integrateWallShearForces(V, section):
     # integrate wall shear forces into sectional shear SF 
-    Vx, Vy, T = [], [], []
+    Vy, Vz, T = [], [], []
     e = section.get_e()
 
     for i,wall in enumerate(section.walls):
         # Integrate for shear sectional forces
-        Vx.append( - V[i] * math.cos(wall.angle) )    # Vx (negative as geometry is define opposite positive wall force)
-        Vy.append( - V[i] * math.sin(wall.angle) )    # Vy
+        Vy.append( - V[i] * math.cos(wall.angle) )    # Vy (negative as geometry is define opposite positive wall force)
+        Vz.append( - V[i] * math.sin(wall.angle) )    # Vz
         T.append(    V[i] * e[i] / 1000          )    # T
 
-    return sum(Vx), sum(Vy), sum(T)
+    return sum(Vy), sum(Vz), sum(T)
 
 
 
@@ -340,7 +340,7 @@ def SLS_analysis(section, SF, Mat):
     Res.add_plot(sigma_sx, 'Long. reinf. stress', 'MPa', 0.15 * max(abs(sigma_sx)) / (max(abs(dist['reinforcement_stress'])) + 1e-12))
     Res.add_plot(sigma_sy, 'Trans. reinf. stress', 'MPa', 0.15 * max(abs(sigma_sy)) / (max(abs(dist['reinforcement_stress'])) + 1e-12))
 
-    print('Integration test Vx, Vy, T: ', integrateShearFlow(H, dist, section))
+    print('Integration test Vy, Vz, T: ', integrateShearFlow(H, dist, section))
     return Res
 
 
@@ -352,7 +352,7 @@ def dualSection(section, SF, Mat):
 
     # --------------- Prepare second section ---------------
     dx = 0.001  # [m] Offset
-    SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * SF.Vy, SF.My - dx * SF.Vx)
+    SF2 = SectionForces.SectionForces(SF.N, SF.My + dx * SF.Vz, SF.Mz + dx * SF.Vy) # SIGN changed as positive Vy now increases Mz
     x0 = [0 if abs(xi)<1e-6 else xi for xi in x] # the initial guess may not contain extremely small values such as 3e-169
     
     # --------------- Optimize plane strain variables for the secondary section ---------------
@@ -408,7 +408,7 @@ def uncracked_strain_state(section, SF):
     # eps_tens = 2.923e-03    # strain in extreme tension fiber
 
     # bending moment angle (loading angle, not NA angle!)
-    load_angle = math.degrees(math.atan2(SF.My, SF.Mx))
+    load_angle = math.degrees(math.atan2(SF.Mz, SF.My)) # SIGN might need to change this also?
 
     NA_angle = load_angle       # angle of NA relative to horizontal (positive counter-clockwise)
     eps_comp = - 1.5e-03  # strain in extreme compression fiber
@@ -504,7 +504,7 @@ def errorFunBending(x0, section, SF, Mat):
     curSF, _ = BendingEQ(section, Mat, NA_angle, eps_comp, eps_tens)  # get SF for given strain state
 
     # Section force difference (sum squared diff.)
-    return (SF.N*load_fac - curSF.N)**2 + (SF.Mx*load_fac - curSF.Mx)**2 + (SF.My*load_fac - curSF.My)**2
+    return (SF.N*load_fac - curSF.N)**2 + (SF.My*load_fac - curSF.My)**2 + (SF.Mz*load_fac - curSF.Mz)**2
 
 
 def BendingEQ(section, Mat, NA_angle, eps_comp, eps_tens):
@@ -566,18 +566,18 @@ def BendingEQ(section, Mat, NA_angle, eps_comp, eps_tens):
     #print("F_tot =", F_tot)
     N = sum(F_tot)
 
-    # Moment about x-axis
-    y_avg = (np.array(y[1:]) + np.array(y[:-1])) / 2
-    wallMx = -F_tot * (y_avg - centreY) / 1000  # [kNm]
-    Mx = sum(wallMx)
-
     # Moment about y-axis
-    x_avg = (np.array(x[1:]) + np.array(x[:-1])) / 2
-    wallMy = F_tot * (x_avg - centreX) / 1000  # [kNm]
+    y_avg = (np.array(y[1:]) + np.array(y[:-1])) / 2
+    wallMy = -F_tot * (y_avg - centreY) / 1000  # [kNm]
     My = sum(wallMy)
 
+    # Moment about z-axis
+    x_avg = (np.array(x[1:]) + np.array(x[:-1])) / 2
+    wallMz = -F_tot * (x_avg - centreX) / 1000  # [kNm]   sign changed to reflect that positive Mz now yields compression on the right
+    Mz = sum(wallMz)
+
     # Dump into SectionForces class
-    SF = SectionForces.SectionForces(N, Mx, My)
+    SF = SectionForces.SectionForces(N, My, Mz)
 
     # Arrange stress/flow distributions into a dictionary
     dist = dict()
@@ -912,12 +912,12 @@ if __name__ == '__main__':  # if we're running file directly and not importing i
 
     # Define sectional forces
     N = -17000
-    Mx = 50000
-    My = 00000
-    Vx = 0
-    Vy = 2000
+    My = 50000
+    Mz = 00000
+    Vy = 0
+    Vz = 2000
     T = 0
-    SF = SectionForces.SectionForces(N, Mx, My, Vx, Vy, T)
+    SF = SectionForces.SectionForces(N, My, Mz, Vy, Vz, T)
 
     # Initiate Material class
     Mat = Material.MatProp()

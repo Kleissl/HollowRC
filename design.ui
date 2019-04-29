@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1101</width>
-    <height>768</height>
+    <width>1031</width>
+    <height>775</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -162,7 +162,7 @@
                 <property name="minimumSize">
                  <size>
                   <width>325</width>
-                  <height>270</height>
+                  <height>280</height>
                  </size>
                 </property>
                 <property name="font">
@@ -171,7 +171,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sign convention&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Axes&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- Positive x towards right&lt;br/&gt;- Positive y upward&lt;br/&gt;- The sign convention generally follows a left hand system (LHS)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Geometry&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- All dimension are in millimeters&lt;br/&gt;- The section must be defined in the clock-wise direction&lt;br/&gt;- Angles are taken positive in the counter-clockwise direction starting from the x-axis&lt;br/&gt;- Reinforcement ratios are defined as the stee-to-concrete ratio (e.g. 0.01 = 1%)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Flows &amp;amp; Stresses&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- Normal flow and normal stress are positive for tension&lt;br/&gt;- Shear flow is positive in the counter-clockwise direction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Section forces&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- Positive Mx moment yields compression in the top&lt;br/&gt;- Positive My moment yields compression on the left side&lt;br/&gt;- Negative N (normal force) yields compression&lt;br/&gt;- Positive Vx yields shear in the x-direction (right)&lt;br/&gt;- Positive Vy yields shear in the y-direction (upward)&lt;br/&gt;- Positive T (torsion) yields counter-clockwise shear flow&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sign convention&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;The sign convention generally follows a right hand system (RHS). See illustration in figure below.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Geometry&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- All dimensions are in millimeters&lt;br/&gt;- The section walls must be defined in the clock-wise direction&lt;br/&gt;- Angles are taken positive in the counter-clockwise direction starting from the y-axis&lt;br/&gt;- Reinforcement ratios are defined as the steel-to-concrete ratio (e.g. 0.01 = 1%)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Flows &amp;amp; Stresses&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- Normal flow and normal stress are positive for tension&lt;br/&gt;- Shear flow is positive in the counter-clockwise direction&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt; text-decoration: underline;&quot;&gt;Section forces&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;&lt;br/&gt;- Positive My moment yields compression in the top&lt;br/&gt;- Positive Mz moment yields compression on the right side&lt;br/&gt;- Negative N (normal force) yields compression&lt;br/&gt;- Positive Vy yields shear in the y-direction (right)&lt;br/&gt;- Positive Vz yields shear in the z-direction (upward)&lt;br/&gt;- Positive T (torsion) yields counter-clockwise shear flow&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -198,38 +198,14 @@
                </spacer>
               </item>
               <item>
-               <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_moment_sign">
-                  <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/moment_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_coord_axis">
-                  <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/coordinates.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QLabel" name="label_shear_sign">
-                  <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/force_sign_convention.PNG&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QLabel" name="label_24">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap resource="resources.qrc">:/Figures/resources/coordinates_and_sign_convention.PNG</pixmap>
+                </property>
+               </widget>
               </item>
               <item>
                <spacer name="verticalSpacer_3">
@@ -402,12 +378,12 @@
                 </row>
                 <column>
                  <property name="text">
-                  <string>X-coordinate</string>
+                  <string>Y-coordinate</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Y-coordinate</string>
+                  <string>Z-coordinate</string>
                  </property>
                 </column>
                 <column>
@@ -1322,22 +1298,22 @@
                 </column>
                 <column>
                  <property name="text">
-                  <string>Mx [kNm]</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
                   <string>My [kNm]</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Vx [kN]</string>
+                  <string>Mz [kNm]</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
                   <string>Vy [kN]</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Vz [kN]</string>
                  </property>
                 </column>
                 <column>
@@ -1591,7 +1567,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1101</width>
+     <width>1031</width>
      <height>21</height>
     </rect>
    </property>

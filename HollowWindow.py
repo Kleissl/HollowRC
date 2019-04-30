@@ -21,7 +21,7 @@ import Analysis
 import hollow_window  # load the window design incl. events etc. defined in Qt Designer
 import SectionForces
 import Material
-import Results
+# import Results
 import Geometry
 import pickle
 import Plots
@@ -65,7 +65,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         check_boxes = []
         for j in range(10):  # update result plot if plot checkbox is changed
             check_box = getattr(self, 'checkBox_plot' + str(j+1))
-            check_box.stateChanged.connect(self.refresh_plots)
+            check_box.stateChanged.connect(self.refresh_visible_plots)
             check_boxes.append(check_box)
         self.graphicsViewResults.set_check_boxes(check_boxes)
         obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
@@ -123,9 +123,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.pushButton_analyse.setText('Analyse ULS')
         else:
             self.pushButton_analyse.setText('Analyse')
-        self.refresh_plots()
+        self.refresh_visible_plots()
 
-    def refresh_plots(self): # signal/normal function
+    def refresh_visible_plots(self): # signal/normal function
         #self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
         #self.graphicsViewConcrete.resize(??)
         if self.tabWidget.currentIndex() == 1:
@@ -135,13 +135,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         elif self.tabWidget.currentIndex() == 3:
             # update result plot
             try:
-                self.scene.clear()  # clearing the plot if there's no results or latest analysis failed
-            except:
-                None
-            try:
                 self.result_plot(self.Res)
             except:
-                None
+                pass
 
     def save_file(self):
         try:    # try to save file 
@@ -181,6 +177,12 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         except Exception as e:
             print(e)
             self.show_msg_box('Failed to open file')
+
+            # clear results and plot of results
+            self.Res = None
+            self.result_plot(self.Res)
+            self.refresh_visible_plots()                #  <---- NONE OF THIS SEEMS TO WORK !!!
+            self.graphicsViewResults.clear_scene()
 
     def show_msg_box(self, msg_str, title="Error Message", set_load_fac_label=False):
         msg = QtWidgets.QMessageBox()
@@ -225,7 +227,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         if not section.valid():
             self.show_msg_box(['Geometry error', 'The defined geometry is not valid'])
             self.Res = None
-            self.refresh_plots()
+            self.refresh_visible_plots()
             return
 
         # print(Geometry)
@@ -268,7 +270,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.load_fac_label.setText('No load-factor currently applied')
 
         # update result plot
-        self.refresh_plots()
+        self.refresh_visible_plots()
 
         # return mouse cursor to normal ArrowCursor
         self.setCursor(QtCore.Qt.ArrowCursor)
@@ -460,8 +462,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             table.insertRow(row_count)           # insert new row at the end
             # insert items
             X, Y, T, rho_long, rho_trans = wall.X[0], wall.Y[0], wall.thick, wall.rho_long, wall.rho_trans
-            print('X:', X)
-            #for col in range(col_count):  # loop over columns
+            # loop over columns
             for col, value in enumerate([X, Y, T, rho_long, rho_trans]):
                 table.setItem(row_count, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
         table.blockSignals(False)
@@ -485,11 +486,13 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
     def setSF(self, SF):
         table = self.SectionForces_tableWidget
-        table.removeRow(0)                      # are lossing the row name 'LC' to the left!!!!
-        table.insertRow(0)
+        # table.removeRow(0)       # The row header "LC" is lost if the row is removed/inserted
+        # table.insertRow(0)
         N, My, Mz, Vy, Vz, T = SF.N, SF.My, SF.Mz, SF.Vy, SF.Vz, SF.T
         for col, value in enumerate([N, My, Mz, Vy, Vz, T]):
-                table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
+                # table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
+                table.setItem(0, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
+
 
     def get_table_row(self, table, row):
         col_count = table.columnCount()                         # get number of columns
@@ -578,7 +581,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
     #         super().showEvent(event)
 
     def resizeEvent(self, event): # overwrites the resizeEvent
-        self.refresh_plots()
+        self.refresh_visible_plots()
         return QtWidgets.QMainWindow.resizeEvent(self, event)
 
     def update_statusline(self, string):

@@ -14,7 +14,7 @@ Author: Kenneth C. Kleissl
 # Standard library modules
 import sys  # We need sys so that we can pass argv to QApplication
 # Third-party library modules
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtGui
 # Local source tree modules
 from HollowWindow import HollowWindow  # import the MainWindow class
 
@@ -23,9 +23,18 @@ def main():
     # Create an instance of QApplication (Qt's application object).
     app = QtWidgets.QApplication(sys.argv)
 
+    # Splash screen
+    pixmap = QtGui.QPixmap("resources/icon.png")
+    splash = QtWidgets.QSplashScreen(pixmap)
+    splash.show()  
+    app.processEvents()
+
     # The QWidget widget is the base class of all user interface objects in Qt.
     window = HollowWindow()  # We set the form to be our ExampleApp (design)
     window.show()  # Show the window/form
+
+    # Finished starting up the application, so hide the splash icon
+    splash.finish(window)
 
     # Exception handling
     sys.excepthook = my_exception_hook      # overwrite the sys exception hook with custom wrapping function

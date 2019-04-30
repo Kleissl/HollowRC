@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'design.ui',
-# licensing of 'design.ui' applies.
+# Form implementation generated from reading ui file 'hollow_window.ui',
+# licensing of 'hollow_window.ui' applies.
 #
-# Created: Mon Apr 29 20:53:15 2019
+# Created: Tue Apr 30 20:14:30 2019
 #      by: pyside2-uic  running on PySide2 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -883,7 +883,7 @@ class Ui_MainWindow(object):
         self.exitAct.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Exit application", None, -1))
         self.exitAct.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Q", None, -1))
 
-from Plots import MyResultView, MyGeometryView
+from Plots import MyGeometryView, MyResultView
 import resources_rc
 
 if __name__ == "__main__":

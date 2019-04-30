@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module containes all the application window classes for the "Hollow section analysis tool" GUI
+This module containes all the application window classes for HollowRC 
 
 History log:
 Version 0.1 - first working build based on UI from Qt Designer
@@ -18,7 +18,7 @@ import numpy as np
 
 # Local source tree modules
 import Analysis
-import design  # load the MainWindow design incl. events etc. defined in Qt Designer
+import hollow_window  # load the window design incl. events etc. defined in Qt Designer
 import SectionForces
 import Material
 import Results
@@ -27,21 +27,15 @@ import pickle
 import Plots
 #import TableInterface
 
-# example of automatic load of .ui file
-# from PyQt5.uic import loadUiType
-# custom_window = loadUiType('ui.ui')
-# class Window(QMainWindow, custom_window):
-#     def __init__(self):
-#         QMainWindow.__init__(self)
-#         custom_window.__init__(self)
-#         self.setupUi(self)
 
-class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compatible
+class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
+    '''
+    HollowRC window class
+    '''
     def __init__(self):
         super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
         self.setupUi(self)  # setup layout and widgets defined in design.py by Qt Designer
         #self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
-
 
         # version tag and label
         self.tag = 'v1.2'
@@ -386,11 +380,14 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             obj = getattr(self, 'lineEdit_' + string)   # e.g.: obj = self.lineEdit_f_ck
             try:
                 value = float(obj.text())   # convert item text to float
+                if value == 0:
+                    raise ValueError
                 setattr(Mat, string, value)  # Send input value to class
             except ValueError:
+                self.show_msg_box(['Material input error', 'Input value "{}" for {} is not valid. {} returned to default value.'.format(obj.text(), string, string)])
                 value = getattr(Mat, string)   # Get default value from class
-                #obj.setText(value.str())     # Replace bad item content
                 obj.setText(str(value))     # Replace bad item content
+
         Mat.update_strengths()
         return Mat
 
@@ -436,10 +433,12 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
         obj = self.lineEdit_wallNodeN
         try:
             value = int(obj.text())  # convert item text to integer
-            # Geometry['wallNodeN'] = value  # Send input value to class
-            section.set_wallNodeN(value)  # Send input value to class
+            if value == 0:
+                raise ValueError
+            section.set_wallNodeN(value)  # Send input value to section class
         except ValueError:
             # value = 25  # set value back to default
+            self.show_msg_box(['Geometry input error', 'Input value "{}" for {} is not valid. {} returned to default value.'.format(obj.text(), 'no. of data points', 'No. of data points')])
             value = Geometry.Wall.wallNodeN  # set value back to class default
             obj.setText(str(value))  # Replace bad item content
 
@@ -461,9 +460,10 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             table.insertRow(row_count)           # insert new row at the end
             # insert items
             X, Y, T, rho_long, rho_trans = wall.X[0], wall.Y[0], wall.thick, wall.rho_long, wall.rho_trans
+            print('X:', X)
             #for col in range(col_count):  # loop over columns
             for col, value in enumerate([X, Y, T, rho_long, rho_trans]):
-                table.setItem(row_count, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
+                table.setItem(row_count, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
         table.blockSignals(False)
 
         obj = self.lineEdit_wallNodeN   
@@ -499,6 +499,8 @@ class HollowWindow(QtWidgets.QMainWindow, design.Ui_MainWindow):  # PyQt5 compat
             try:
                 row_values.append(float(item.text()))           # Add item text to list as float
             except ValueError:
+                header = table.horizontalHeaderItem(col).text()
+                self.show_msg_box(['Table input error', 'Input value "{}" for row index {} in {} column not valid. Value set to zero.'.format(item.text(), row, header)])
                 item.setText('0')                               # Replace bad item content
                 row_values.append(0.0)                          # Add zero to list
         return row_values

@@ -194,8 +194,8 @@ class CrossSection:
             Ix.append( wall.get_Ix() + wall.area*(wall.midY - centreY)**2 )
             Iy.append( wall.get_Iy() + wall.area*(wall.midX - centreX)**2 )
             
-        print('Ix:', Ix)
-        print('Iy:', Iy)            
+        # print('Ix:', Ix)
+        # print('Iy:', Iy)            
         # Sum wall contributions
         return sum(Ix), sum(Iy)
 

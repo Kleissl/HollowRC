@@ -22,10 +22,10 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         self.setScene(self.scene)                   # set the created scene
 
     def clear_scene(self):
-            self.scene.clear()                          # Clear scene
-            # scene.clear()  # Clear
-            # view.scene().disconnect()
-            # view.close()
+        self.scene.clear()                          # Clear scene
+        # scene.clear()  # Clear
+        # view.scene().disconnect()
+        # view.close()
 
     def update_section(self, signal_value): # signal receiver
         dx, dy, wall_id = signal_value
@@ -250,7 +250,15 @@ class MyResultView(QtWidgets.QGraphicsView):
         self.setScene(self.scene)                   # set the created scene
 
     def clear_scene(self):
-            self.scene.clear()                          # Clear scene
+        self.scene.clear()                          # Clear scene
+        # self.items().clear()
+        # self.resetCachedContent()
+        # self.scene = QtWidgets.QGraphicsScene()     # creates a scene
+        # self.setScene(self.scene)                   # set the created scene
+        # print('result scene cleared')
+        # self.viewport().update()
+        # self.update()
+        # self.scene.update()
 
     def show_result_values(self, signal_value): # signal receiver
         pass
@@ -368,6 +376,7 @@ class MyResultView(QtWidgets.QGraphicsView):
 
         # Fit plottet items in view
         self.fitInView(self.scene.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        # ui->graphicsView->fitInView(_scene->itemsBoundingRect(),Qt::KeepAspectRatio);   # consider changing to itemsBoundingRect when sceneRect not updating!!
         self.scene.mousePressEvent = self.scene_mousePressEvent  # overrule QGraphicsSceneEvent
 
     def scene_mousePressEvent(self, event): # when user clicks on result the values are listed in the status line

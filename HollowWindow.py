@@ -38,7 +38,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         #self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
 
         # version tag and label
-        self.tag = 'v1.2'
+        self.tag = 'v1.3'
         self.label_version.setText(self.tag)
 
         # --- Triggers --- (interactive elements such as actions and buttons with a custom function)

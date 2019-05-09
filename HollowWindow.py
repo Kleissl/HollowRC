@@ -290,13 +290,15 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
     def node_coords_by_click(self, signal_value):
         x = signal_value['x']
         y = signal_value['y']
-        self.graphicsViewGeometry.awaits_click = False  # stop further signals from being send
+        self.graphicsViewGeometry.awaits_click = False  # stop further click signals from being send
         table = self.coordinates_tableWidget
+        table.blockSignals(True)                # block signals
         row_index = table.rowCount() - 1        # get index of last row
         x_item = table.item(row_index, 0)       # Retrieve item from the cell
         x_item.setText(str(x))                  # Replace bad item content
         y_item = table.item(row_index, 1)
-        y_item.setText(str(-y))                  # Replace bad item content
+        table.blockSignals(False)               # turn signals back on before last change to trigger update
+        y_item.setText(str(-y))                 # Replace bad item content
 
     def add_row(self):
         self.coordinates_tableWidget.blockSignals(True)
@@ -304,8 +306,13 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.coordinates_tableWidget.insertRow(row_count)           # insert new row at the end
         # insert items?
         col_count = self.coordinates_tableWidget.columnCount()      # get number of columns
-        for col in range(col_count):  # loop over columns
-            self.coordinates_tableWidget.setItem(row_count, col, QtWidgets.QTableWidgetItem())  # set item to row below
+        for col in range(2):  # loop over columns
+            self.coordinates_tableWidget.setItem(row_count, col, QtWidgets.QTableWidgetItem('click'))  # set item to row below
+        # copy values from previous row
+        row_values = self.get_table_row(self.coordinates_tableWidget, row_count - 1)
+        for col in range(2, col_count):  # loop over non-coordinates columns
+            value = row_values[col]
+            self.coordinates_tableWidget.setItem(row_count, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
         self.statusbar.showMessage('Recent action: row added - Click on geometry plot scene to load coordinates into the newly added row')
         self.coordinates_tableWidget.blockSignals(False)
         self.graphicsViewGeometry.awaits_click = True       # will allow for scene_clicked signals

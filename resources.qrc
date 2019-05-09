@@ -10,9 +10,9 @@
     <file>resources/Icon.png</file>
   </qresource>
   <qresource prefix="Figures">
-    <file>resources/coordinates_and_sign_convention.PNG</file>
-    <file>resources/coordinates.PNG</file>
-    <file>resources/force_sign_convention.PNG</file>
-    <file>resources/moment_sign_convention.PNG</file>
+    <file>resources/coordinates_and_sign_convention.png</file>
+    <file>resources/coordinates.png</file>
+    <file>resources/force_sign_convention.png</file>
+    <file>resources/moment_sign_convention.png</file>
   </qresource>
 </RCC>

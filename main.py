@@ -24,7 +24,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     # Splash screen
-    pixmap = QtGui.QPixmap("resources/icon.png")
+    pixmap = QtGui.QPixmap(":/Icons/resources/Icon.png")
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()  
     app.processEvents()

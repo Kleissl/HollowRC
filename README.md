@@ -38,18 +38,18 @@ The complete verification methodology is described in [this paper](docs/Paper_Kl
 ### Illustration of Graphical User Interface (GUI)
 This sections shows a few screen-dumps of the GUI.
 The image below shows the "Geometry"-tab, where the cross-sectional geometry is defined. Features like specifying coordinates for new nodes via mouse click and movement of existing nodes via mouse drag-drop have been implemented to ease the input process.
-![Geometry tab illustration](docs/geometry_tab_illustration.png)
+![Geometry tab illustration](./docs/geometry_tab_illustration.png)
 
 The image below shows the "Material and Analysis"-tab, where the material properties and the analysis properties is provided. Graphical illustration of the specified constitutive relations (stress-strain curves) are shown on the right for both concrete and reinforcement.
-![Material tab illustration](docs/material_tab_illustration.png)
+![Material tab illustration](./docs/material_tab_illustration.png)
 
 Lastly the image below shows the "Loading and Results"-tab, where the combination of sectional forces is provided and the resulting force flows and stresses illustrated.
 An interactive shaded visualisation with overlaying of user-specified results allows for quick exploration of the results, while specific values can be read by hoovering or clicking on points of interest.
-![Result tab illustration](docs/result_tab_illustration.png)
+![Result tab illustration](./docs/result_tab_illustration.png)
 
 ### Sign convention
 The sign convention generally follows a right hand system (RHS). See illustration in figure below.
-![Coordinates and sign convention](resources/coordinates_and_sign_convention.png)
+![Coordinates and sign convention](./resources/coordinates_and_sign_convention.png)
 
 Geometry:
 * All dimensions are in millimeters

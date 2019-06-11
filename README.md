@@ -1,5 +1,5 @@
 # HollowRC
-A Python executable for general design of hollow reinforced concrete sections under combined actions
+A Python libary for general design of hollow reinforced concrete sections under combined actions packed into an easy to use executable.
 
 ## Getting Started - Installation
 1. Download the latest release from https://github.com/Kleissl/HollowRC/releases/latest
@@ -29,13 +29,27 @@ The implementation is based on the following assumptions:
 * The walls are sufficient thin, compared to the cross-section dimensions, for a thin-walled approach to be applicable.
 * Normal stresses in the circumferential direction are neglected even though equilibrium in principle requires the presence of these (this is a very common approach when analysing thin-walled sections).
 * Sufficient minimum reinforcement to provide the nesessary ductility capacity for plastic redistribution.
-* Does not cover instabilities or shear lag effects.
+* Does not cover instabilities or shear lag effects (yet).
+* For now it's limited closed single-cell hollow cross-sections 
 
 ## Documentation
-Further documention with figures etc. will follow...
+The complete verification methodology is described in [this paper](docs/Paper_Kleissl_Costa.pdf).
+
+### Illustration of Graphical User Interface (GUI)
+This sections shows a few screen-dumps of the GUI.
+The image below shows the "Geometry"-tab, where the cross-sectional geometry is defined. Features like specifying coordinates for new nodes via mouse click and movement of existing nodes via mouse drag-drop have been implemented to ease the input process.
+![Geometry tab illustration](docs/geometry_tab_illustration.png)
+
+The image below shows the "Material and Analysis"-tab, where the material properties and the analysis properties is provided. Graphical illustration of the specified constitutive relations (stress-strain curves) are shown on the right for both concrete and reinforcement.
+![Material tab illustration](docs/material_tab_illustration.png)
+
+Lastly the image below shows the "Loading and Results"-tab, where the combination of sectional forces is provided and the resulting force flows and stresses illustrated.
+An interactive shaded visualisation with overlaying of user-specified results allows for quick exploration of the results, while specific values can be read by hoovering or clicking on points of interest.
+![Result tab illustration](docs/result_tab_illustration.png)
 
 ### Sign convention
 The sign convention generally follows a right hand system (RHS). See illustration in figure below.
+![Coordinates and sign convention](resources/coordinates_and_sign_convention.png)
 
 Geometry:
 * All dimensions are in millimeters

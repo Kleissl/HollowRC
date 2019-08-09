@@ -7,12 +7,10 @@
     <file>resources/Open_icon.png</file>
     <file>resources/Save_icon.png</file>
     <file>resources/Exit_icon.png</file>
+    <file>resources/Analyse_icon.png</file>
     <file>resources/Icon.png</file>
   </qresource>
   <qresource prefix="Figures">
     <file>resources/coordinates_and_sign_convention.png</file>
-    <file>resources/coordinates.png</file>
-    <file>resources/force_sign_convention.png</file>
-    <file>resources/moment_sign_convention.png</file>
   </qresource>
 </RCC>

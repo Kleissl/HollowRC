@@ -45,11 +45,11 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.exitAct.triggered.connect(self.exit_app)
         self.saveAct.triggered.connect(self.save_file)
         self.openAct.triggered.connect(self.load_file)
+        self.analyseAct.triggered.connect(self.initiate_analysis)
         self.addRowButton.clicked.connect(self.add_row)
         self.removeRowButton.clicked.connect(self.remove_row)
         self.moveUpRowButton.clicked.connect(self.move_row_up)
         self.moveDownRowButton.clicked.connect(self.move_row_down)
-        self.pushButton_analyse.clicked.connect(self.initiate_analysis)
         # self.pushButton_calcSLS.clicked.connect(self.calculateSLS)
         # self.pushButton_calcULS.clicked.connect(self.calculateULS)
         self.Res = None
@@ -117,12 +117,13 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.tabWidget.setCurrentIndex(0)
 
     def tab_changed(self): # signal function
-        if self.checkBox_analSLS_1.isChecked():
-            self.pushButton_analyse.setText('Analyse SLS')
-        elif self.checkBox_analULS_1.isChecked():
-            self.pushButton_analyse.setText('Analyse ULS')
-        else:
-            self.pushButton_analyse.setText('Analyse')
+        pass
+        # if self.checkBox_analSLS_1.isChecked():
+        #     self.analyseAct.setText('Analyse SLS')
+        # elif self.checkBox_analULS_1.isChecked():
+        #     self.analyseAct.setText('Analyse ULS')
+        # else:
+        #     self.analyseAct.setText('Analyse')
         self.refresh_visible_plots()
 
     def refresh_visible_plots(self): # signal/normal function
@@ -232,6 +233,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
         # print(Geometry)
         print('SF: ' + SF.print_str())
+
+        # switch to Loading & Result tab
+        self.tabWidget.setCurrentIndex(3)
 
         # set mouse cursor to WaitCursor
         self.setCursor(QtCore.Qt.WaitCursor)

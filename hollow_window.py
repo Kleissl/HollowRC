@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'hollow_window.ui',
 # licensing of 'hollow_window.ui' applies.
 #
-# Created: Thu Sep  5 22:09:48 2019
+# Created: Thu Sep  5 23:26:26 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1031, 691)
+        MainWindow.resize(1031, 761)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/resources/Icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         MainWindow.setWindowIcon(icon)
@@ -743,7 +743,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.analyseAct)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -813,7 +813,7 @@ class Ui_MainWindow(object):
         self.label_21.setText(QtWidgets.QApplication.translate("MainWindow", "GPa", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("MainWindow", "-", None, -1))
         self.lineEdit_alpha_cc.setText(QtWidgets.QApplication.translate("MainWindow", "0.85", None, -1))
-        self.label_6.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-family:\'Symbol\'; font-size:large;\">a</span><span style=\" vertical-align:sub;\">c</span> = </p></body></html>", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-family:\'Symbol\'; font-size:large;\">a</span><span style=\" vertical-align:sub;\">cc</span> = </p></body></html>", None, -1))
         self.label_23.setText(QtWidgets.QApplication.translate("MainWindow", "<html><head/><body><p><span style=\" font-family:\'Symbol\'; font-size:large;\">n</span><span style=\" vertical-align:sub;\"></span> = </p></body></html>", None, -1))
         self.comboBox_nu.setItemText(0, QtWidgets.QApplication.translate("MainWindow", "0.6 ( 1 - f_ck / 250 )", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("MainWindow", "comp. strength eff. factor", None, -1))

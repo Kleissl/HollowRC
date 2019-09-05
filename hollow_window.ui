@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1031</width>
-    <height>775</height>
+    <height>691</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -378,27 +378,27 @@
                 </row>
                 <column>
                  <property name="text">
-                  <string>Y-coordinate</string>
+                  <string>Y-coordinate [mm]</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Z-coordinate</string>
+                  <string>Z-coordinate [mm]</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Wall thickness</string>
+                  <string>Wall thickness [mm]</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Reinf. ratio long.</string>
+                  <string>Reinf. ratio long. [-]</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Reinf. ratio trans.</string>
+                  <string>Reinf. ratio trans. [-]</string>
                  </property>
                 </column>
                 <item row="0" column="0">
@@ -1237,7 +1237,7 @@
               <item>
                <widget class="QTableWidget" name="SectionForces_tableWidget">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -1250,41 +1250,8 @@
                 <property name="sizeAdjustPolicy">
                  <enum>QAbstractScrollArea::AdjustToContents</enum>
                 </property>
-                <property name="textElideMode">
-                 <enum>Qt::ElideMiddle</enum>
-                </property>
-                <attribute name="horizontalHeaderVisible">
-                 <bool>false</bool>
-                </attribute>
-                <attribute name="horizontalHeaderCascadingSectionResizes">
-                 <bool>true</bool>
-                </attribute>
-                <attribute name="horizontalHeaderMinimumSectionSize">
-                 <number>39</number>
-                </attribute>
                 <attribute name="horizontalHeaderDefaultSectionSize">
                  <number>90</number>
-                </attribute>
-                <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-                 <bool>false</bool>
-                </attribute>
-                <attribute name="horizontalHeaderStretchLastSection">
-                 <bool>false</bool>
-                </attribute>
-                <attribute name="verticalHeaderVisible">
-                 <bool>false</bool>
-                </attribute>
-                <attribute name="verticalHeaderCascadingSectionResizes">
-                 <bool>true</bool>
-                </attribute>
-                <attribute name="verticalHeaderDefaultSectionSize">
-                 <number>30</number>
-                </attribute>
-                <attribute name="verticalHeaderShowSortIndicator" stdset="0">
-                 <bool>true</bool>
-                </attribute>
-                <attribute name="verticalHeaderStretchLastSection">
-                 <bool>true</bool>
                 </attribute>
                 <row>
                  <property name="text">

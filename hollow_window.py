@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'hollow_window.ui',
 # licensing of 'hollow_window.ui' applies.
 #
-# Created: Fri Aug  9 14:55:52 2019
-#      by: pyside2-uic  running on PySide2 5.12.3
+# Created: Thu Sep  5 22:09:48 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1031, 775)
+        MainWindow.resize(1031, 691)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/resources/Icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         MainWindow.setWindowIcon(icon)
@@ -566,7 +566,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.SectionForces_tableWidget = QtWidgets.QTableWidget(self.tab_loading)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.SectionForces_tableWidget.sizePolicy().hasHeightForWidth())
@@ -575,7 +575,6 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         self.SectionForces_tableWidget.setFont(font)
         self.SectionForces_tableWidget.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.SectionForces_tableWidget.setTextElideMode(QtCore.Qt.ElideMiddle)
         self.SectionForces_tableWidget.setObjectName("SectionForces_tableWidget")
         self.SectionForces_tableWidget.setColumnCount(6)
         self.SectionForces_tableWidget.setRowCount(1)
@@ -605,17 +604,7 @@ class Ui_MainWindow(object):
         self.SectionForces_tableWidget.setItem(0, 4, item)
         item = QtWidgets.QTableWidgetItem()
         self.SectionForces_tableWidget.setItem(0, 5, item)
-        self.SectionForces_tableWidget.horizontalHeader().setVisible(False)
-        self.SectionForces_tableWidget.horizontalHeader().setCascadingSectionResizes(True)
         self.SectionForces_tableWidget.horizontalHeader().setDefaultSectionSize(90)
-        self.SectionForces_tableWidget.horizontalHeader().setMinimumSectionSize(39)
-        self.SectionForces_tableWidget.horizontalHeader().setSortIndicatorShown(False)
-        self.SectionForces_tableWidget.horizontalHeader().setStretchLastSection(False)
-        self.SectionForces_tableWidget.verticalHeader().setVisible(False)
-        self.SectionForces_tableWidget.verticalHeader().setCascadingSectionResizes(True)
-        self.SectionForces_tableWidget.verticalHeader().setDefaultSectionSize(30)
-        self.SectionForces_tableWidget.verticalHeader().setSortIndicatorShown(True)
-        self.SectionForces_tableWidget.verticalHeader().setStretchLastSection(True)
         self.horizontalLayout_2.addWidget(self.SectionForces_tableWidget)
         self.load_fac_label = QtWidgets.QLabel(self.tab_loading)
         font = QtGui.QFont()
@@ -771,11 +760,11 @@ class Ui_MainWindow(object):
         self.coordinates_tableWidget.verticalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Node no. 2", None, -1))
         self.coordinates_tableWidget.verticalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "Node no. 3", None, -1))
         self.coordinates_tableWidget.verticalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Node no. 4", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("MainWindow", "Y-coordinate", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Z-coordinate", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "Wall thickness", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Reinf. ratio long.", None, -1))
-        self.coordinates_tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("MainWindow", "Reinf. ratio trans.", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("MainWindow", "Y-coordinate [mm]", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("MainWindow", "Z-coordinate [mm]", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("MainWindow", "Wall thickness [mm]", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("MainWindow", "Reinf. ratio long. [-]", None, -1))
+        self.coordinates_tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("MainWindow", "Reinf. ratio trans. [-]", None, -1))
         __sortingEnabled = self.coordinates_tableWidget.isSortingEnabled()
         self.coordinates_tableWidget.setSortingEnabled(False)
         self.coordinates_tableWidget.item(0, 0).setText(QtWidgets.QApplication.translate("MainWindow", "0", None, -1))
@@ -892,7 +881,7 @@ class Ui_MainWindow(object):
         self.analyseAct.setText(QtWidgets.QApplication.translate("MainWindow", "Analyse", None, -1))
         self.analyseAct.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+A", None, -1))
 
-from Plots import MyGeometryView, MyResultView
+from Plots import MyResultView, MyGeometryView
 import resources_rc
 
 if __name__ == "__main__":

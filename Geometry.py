@@ -146,18 +146,24 @@ class CrossSection:
             return e
 
     def valid(self):
+        '''
+        This method checks if the geometry is valid
+        '''
         for T in self.get_thick():
             if T <= 0:
-                print('Negative or zero wall thickness!')
-                return False
+                msg = 'Negative or zero wall thickness not allowed!'
+                print(msg)
+                return False, msg
         for L in self.get_wallLength():
             if L <= 0:
-                print('Negative or zero wall length!')
-                return False
+                msg = 'Negative or zero wall length not allowed!'
+                print(msg)
+                return False, msg
         if self.get_enclosed_area() > 0:  # note that the correct clockwise definition yields a negative enclosed area
-            print('Counter-clockwise definition of cross-section!')
-            return False
-        return True
+            msg = 'The cross-section walls must be defined in the clockwise direction!'
+            print(msg)
+            return False, msg
+        return True, None
 
     def set_section_dist(self, dist):
         for i,wall in enumerate(self.walls):  # looping over walls

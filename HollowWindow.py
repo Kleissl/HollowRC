@@ -219,7 +219,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.refresh_visible_plots()                #  <---- NONE OF THIS SEEMS TO WORK !!!
             self.graphicsViewResults.clear_scene()
 
-    def show_msg_box(self, msg_str, title="Error Message", set_load_fac_label=False):
+    def show_msg_box(self, msg_str, title="Error Message",
+                     set_load_fac_label=False):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
 
@@ -230,7 +231,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 self.load_fac_label.setText(msg_str)
         elif isinstance(msg_str, list):                # if a list
             msg.setText(msg_str[0])                    # set text in msg box
-            print(msg_str) 
+            print(msg_str)
             if set_load_fac_label:
                 self.load_fac_label.setText(msg_str[0])    # update label
             if len(msg_str) > 1:
@@ -259,8 +260,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         Mat = self.getMaterial()
 
         # check if geometry is valid
-        if not section.valid():
-            self.show_msg_box(['Geometry error', 'The defined geometry is not valid'])
+        valid, msg = section.valid()
+        if not valid:
+            self.show_msg_box(['The defined geometry is not valid', msg])
             self.Res = None
             self.refresh_visible_plots()
             return

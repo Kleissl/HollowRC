@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module containes all the application window classes for HollowRC 
+This module containes all the application window classes for HollowRC
 
 History log:
 Version 0.1 - first working build based on UI from Qt Designer
@@ -25,7 +25,7 @@ import Material
 import Geometry
 import pickle
 import Plots
-#import TableInterface
+# import TableInterface
 
 
 class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
@@ -34,14 +34,15 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
     '''
     def __init__(self):
         super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
-        self.setupUi(self)  # setup layout and widgets defined in design.py by Qt Designer
-        #self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
+        self.setupUi(self)  # setup layout and widgets defined in Qt Designer
+        # self.geometry_table = TableInterface.MyTable(self.coordinates_tableWidget)
 
         # version tag and label
         self.tag = 'v1.3'
         self.label_version.setText(self.tag)
 
-        # --- Triggers --- (interactive elements such as actions and buttons with a custom function)
+        # --- Triggers ---
+        # Connect the interactive elements with a custom method)
         self.exitAct.triggered.connect(self.exit_app)
         self.saveAct.triggered.connect(self.save_file)
         self.openAct.triggered.connect(self.load_file)
@@ -54,27 +55,42 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # self.pushButton_calcULS.clicked.connect(self.calculateULS)
         self.Res = None
 
-        # --- Signals --- (e,g, change signals from check box state, drop down selection and editable values)
-        self.coordinates_tableWidget.itemChanged.connect(self.geometry_plot)
-        self.graphicsViewGeometry.new_section.connect(self.setGeometry)  # call setGeometry method if a new_section signal is received
-        self.graphicsViewGeometry.scene_clicked.connect(self.node_coords_by_click) 
-        self.graphicsViewResults.status_str.connect(self.update_statusline) # connect the status_str signal with the update_statusline method
+        # --- Signals ---
+        # update geometry plot if table item changes
+        self.coordinates_tableWidget.itemChanged.connect(
+            self.geometry_plot)
+        # call setGeometry method if a new_section signal is received
+        self.graphicsViewGeometry.new_section.connect(
+            self.setGeometry)
+
+        self.graphicsViewGeometry.scene_clicked.connect(
+            self.node_coords_by_click)
+
+        # connect the status_str signal with the update_statusline method
+        self.graphicsViewResults.status_str.connect(
+            self.update_statusline)
 
         # self.graphicsViewGeometry.itemChanged.connect(self.node_moved)
         self.tabWidget.currentChanged.connect(self.tab_changed)
+
         check_boxes = []
         for j in range(10):  # update result plot if plot checkbox is changed
             check_box = getattr(self, 'checkBox_plot' + str(j+1))
             check_box.stateChanged.connect(self.refresh_visible_plots)
             check_boxes.append(check_box)
         self.graphicsViewResults.set_check_boxes(check_boxes)
-        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                    'alpha_cc', 'gamma_c', 'gamma_s']
+
         for string in obj_list:
-            obj = getattr(self, 'lineEdit_' + string)   # e.g. obj = self.lineEdit_f_ck
+            # get e.g. obj = self.lineEdit_f_ck
+            obj = getattr(self, 'lineEdit_' + string)
+            # update material plot if any of the inputs changes
             obj.textChanged.connect(self.material_plot)
         self.comboBox_nu.currentIndexChanged.connect(self.material_plot)
         self.comboBox_concrete.currentIndexChanged.connect(self.material_plot)
         self.comboBox_reinf.currentIndexChanged.connect(self.material_plot)
+
         # analysis checkboxes interaction
         self.checkBox_analSLS_1.toggled.connect(
             lambda checked: checked and self.checkBox_analULS_1.setChecked(False))
@@ -83,7 +99,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
         # App window size, location and title
         self.center()
-        self.setWindowTitle('HollowRC section analysis tool')  # overwrites the title from Qt Designer
+        self.title_str = 'HollowRC section analysis tool'
+        self.setWindowTitle(self.title_str)  # overwrites Qt Designer
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Ready')
 
@@ -94,7 +111,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         viewStatusAct.setChecked(True)
         viewStatusAct.triggered.connect(self.toggle_menu)
         viewMenu.addAction(viewStatusAct)
-        
+
         aboutMenu = self.menuBar().addMenu('About')
         aboutVersionAct = QtWidgets.QAction('Check version', self)
         aboutVersionAct.triggered.connect(self.version_check)
@@ -116,7 +133,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # make sure to start at first tab (overrules Qt designer)
         self.tabWidget.setCurrentIndex(0)
 
-    def tab_changed(self): # signal function
+    def tab_changed(self):  # signal function
         pass
         # if self.checkBox_analSLS_1.isChecked():
         #     self.analyseAct.setText('Analyse SLS')
@@ -126,9 +143,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         #     self.analyseAct.setText('Analyse')
         self.refresh_visible_plots()
 
-    def refresh_visible_plots(self): # signal/normal function
-        #self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
-        #self.graphicsViewConcrete.resize(??)
+    def refresh_visible_plots(self):  # signal/normal function
+        # self.chart.setGeometry(self.graphicsViewConcrete.frameRect())
+        # self.graphicsViewConcrete.resize(??)
         if self.tabWidget.currentIndex() == 1:
             self.geometry_plot()
         elif self.tabWidget.currentIndex() == 2:
@@ -141,18 +158,27 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 pass
 
     def save_file(self):
-        try:    # try to save file 
-            openfile = QtWidgets.QFileDialog.getSaveFileName(filter='*.pkj')  # save file dialog
+        '''
+        Save to pickle file
+        '''
+        try:
+            # save file dialog
+            openfile = QtWidgets.QFileDialog.getSaveFileName(filter='*.pkj')
             filename = openfile[0]
             # Load input objects from GUI
             section = self.getGeometry()
             SF = self.getSF()
             Mat = self.getMaterial()
-            Analysis = {'checkBox_analSLS_1': self.checkBox_analSLS_1.isChecked(), 'checkBox_analULS_1': self.checkBox_analULS_1.isChecked()}
+            Analysis = {'checkBox_analSLS_1': self.checkBox_analSLS_1.isChecked(),
+                        'checkBox_analULS_1': self.checkBox_analULS_1.isChecked()}
             # open file for writing
             with open(filename, 'wb') as f:
-                pickle.dump([section, SF, Mat, Analysis], f) # dump objevts to file
-            print('file saved')
+                # dump objects to file
+                pickle.dump([section, SF, Mat, Analysis], f)
+            print('File saved to ' + filename)
+            # update window title
+            title = self.title_str + (f' ({filename})')
+            self.setWindowTitle(title)
         except FileNotFoundError:
             pass  # do nothing when user press cancel
         except Exception as e:
@@ -160,19 +186,27 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.show_msg_box('Failed to save file')
 
     def load_file(self):
-        try:    # try to open file 
-            openfile = QtWidgets.QFileDialog.getOpenFileName(filter='*.pkj')  # Open file dialog
+        '''
+        Load pickle file
+        '''
+        try:
+            # Open file dialog
+            openfile = QtWidgets.QFileDialog.getOpenFileName(filter='*.pkj')
             filename = openfile[0]
             # open file for reading
             with open(filename, 'rb') as f:
-                section, SF, Mat, Analysis = pickle.load(f) # Getting back the objects
+                # Getting back the objects
+                section, SF, Mat, Analysis = pickle.load(f)
             #  insert variables in GUI
             self.setGeometry(section)
             self.setSF(SF)
             self.setMaterial(Mat)
             self.checkBox_analSLS_1.setChecked(Analysis['checkBox_analSLS_1'])
             self.checkBox_analULS_1.setChecked(Analysis['checkBox_analULS_1'])
-            print('file opened')
+            print('File opened from ' + filename)
+            # update window title
+            title = self.title_str + (f' ({filename})')
+            self.setWindowTitle(title)
         except FileNotFoundError:
             pass  # do nothing when user press cancel
         except Exception as e:
@@ -246,7 +280,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 string = self.checkBox_analSLS_1.text()
                 self.statusbar.showMessage(string + ' analysis initiated')
                 self.Res = Analysis.SLS_analysis(section, SF, Mat)
-                error_msg = None # errors are now passed as exceptions
+                error_msg = None  # errors are now passed as exceptions
                 self.load_fac_label.setText('No load-factor currently applied')  # <-- might not be needed
                 self.statusbar.showMessage(string + ' analysis completed')
             elif self.checkBox_analULS_1.isChecked():
@@ -387,10 +421,11 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # Mat.nu_method = self.comboBox_nu.currentText()
 
         # getting the ext inputs or overwriting bad content     <-- OVERWRITES SHOULD HAPPEN ON CHANGED-SIGNAL
-        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                    'alpha_cc', 'gamma_c', 'gamma_s']
         for string in obj_list:
-            # obj = self.lineEdit_f_ck
-            obj = getattr(self, 'lineEdit_' + string)   # e.g.: obj = self.lineEdit_f_ck
+            # get e.g. obj = self.lineEdit_f_ck
+            obj = getattr(self, 'lineEdit_' + string)
             try:
                 value = float(obj.text())   # convert item text to float
                 if value == 0:
@@ -405,21 +440,28 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         return Mat
 
     def setMaterial(self, Mat):
+        '''
+        Populate material input cells with material instance attributes
+        '''
         # set combobox selections
         self.comboBox_concrete.setEditText(Mat.conc_method)
         self.comboBox_reinf.setEditText(Mat.reinf_method)
         # Mat.nu_method
 
         # set the ext inputs
-        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s', 'alpha_cc', 'gamma_c', 'gamma_s']
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                    'alpha_cc', 'gamma_c', 'gamma_s']
         for string in obj_list:
-            obj = getattr(self, 'lineEdit_' + string)   # e.g.: obj = self.lineEdit_f_ck
+            # get e.g. obj = self.lineEdit_f_ck
+            obj = getattr(self, 'lineEdit_' + string)
             value = getattr(Mat, string)   # Get value from class
             obj.setText(str(value))     # Replace text in lineEdit item
-        # Mat.update_strengths()
 
     def getGeometry(self):
-        X, Y, T, rho_long, rho_trans = [], [], [], [], []           # initiate lists
+        '''
+        Build section instance from geometry table
+        '''
+        X, Y, T, rho_long, rho_trans = [], [], [], [], []
         table = self.coordinates_tableWidget
         row_count = table.rowCount()         # get number of rows
         for row in range(row_count):
@@ -461,6 +503,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         return section
 
     def setGeometry(self, section):
+        '''
+        Populate table with section instance attributes
+        '''
         table = self.coordinates_tableWidget
         table.blockSignals(True)
         # delete all rows
@@ -478,7 +523,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 table.setItem(row_count, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
         table.blockSignals(False)
 
-        obj = self.lineEdit_wallNodeN   
+        obj = self.lineEdit_wallNodeN
         value = wall.wallNodeN          # get value from last wall instance
         obj.setText(str(value))         # Replace bad item content
 
@@ -503,7 +548,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         for col, value in enumerate([N, My, Mz, Vy, Vz, T]):
                 # table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
                 table.setItem(0, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
-
 
     def get_table_row(self, table, row):
         col_count = table.columnCount()                         # get number of columns
@@ -534,7 +578,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         for strain in np.linspace(-0.0035, 0.003, num=200):
             seriesC.append(strain, Mat.concreteStress(strain))
             seriesR.append(strain, Mat.reinforcementStress(strain))
-        
+
         # Setup concrete chart area
         self.chartC = QtCharts.QtCharts.QChart()
         self.chartC.addSeries(seriesC)
@@ -556,7 +600,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.chartR.setMargins(QtCore.QMargins(0, 0, 0, 0))
         self.chartR.setGeometry(self.graphicsViewReinforcement.frameRect())
         self.chartR.setBackgroundRoundness(0)
-        
+
         # Setup view
         viewC = self.graphicsViewConcrete        # define view from gui widget
         viewR = self.graphicsViewReinforcement        # define view from gui widget
@@ -566,9 +610,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         chartViewR.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.white))
         chartViewC.setRenderHint(QtGui.QPainter.Antialiasing)
         chartViewR.setRenderHint(QtGui.QPainter.Antialiasing)
-        chartViewC.show() # cannot get the chart to fit without this
-        chartViewR.show() # cannot get the chart to fit without this
-        #chartView.fitInView(self.chart.Geometry(), QtCore.Qt.KeepAspectRatio)
+        chartViewC.show()  # cannot get the chart to fit without this
+        chartViewR.show()  # cannot get the chart to fit without this
+        # chartView.fitInView(self.chart.Geometry(), QtCore.Qt.KeepAspectRatio)
 
     def result_plot(self, Res):
         # print('calling result plot class')
@@ -591,7 +635,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
     #         self.fitInView(self.sceneRect(), QtCore.Qt.KeepAspectRatio)
     #         super().showEvent(event)
 
-    def resizeEvent(self, event): # overwrites the resizeEvent
+    def resizeEvent(self, event):  # overwrites the resizeEvent
         self.refresh_visible_plots()
         return QtWidgets.QMainWindow.resizeEvent(self, event)
 
@@ -599,34 +643,47 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.statusbar.showMessage(string)
 
     def keyPressEvent(self, event):
-        """Close application from escape key.
-        results in QMessageBox dialog from closeEvent, good but how/why?
-        """
+        '''
+        Reimplementation of the QWidget keyPressEvent() event handler.
+        Allow the user to exit app from escape key.
+        '''
         if event.key() == QtCore.Qt.Key_Escape:
-            self.exit_app()    # sends a QCloseEvent
+            self.close()  # Initiate QCloseEvent
 
-    def exit_app(self):  # not executed if user exit by clicking on upper right cross
-        print('Terminating app')
-        self.close()  # stop the active QApplication instance and sends a QCloseEvent
+    def exit_app(self):
+        '''
+        Method for when the user clicks the "Exit" bottom
+        (not executed if user exit by clicking on upper right cross).
+        '''
+        self.close()  # Initiate QCloseEvent
 
-    def closeEvent(self, event):  # reimplementing the QWidget closeEvent() event handler.
+    def closeEvent(self, event):
+        '''
+        Reimplementation of the QWidget closeEvent() event handler
+        with a QMessage confirmation
+        If accepted this will stop the active QApplication instance
+        '''
         QMessageBox = QtWidgets.QMessageBox
         reply = QMessageBox.question(self, 'Exit confirmation',
                                      "Are you sure you want to quit?",
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
         if reply == QMessageBox.Yes:
             print('CloseEvent accepted')
-            self.deleteLater()  # Schedule objects for deletion (to avoid nonzero exit code)
+            # Schedule objects for deletion (avoids nonzero exit code)
+            self.deleteLater()
             event.accept()
-            # root.destroy()  # destroy all windows (parent, child) within the root instance
         else:
+            print('CloseEvent ignored')
             event.ignore()
 
     def version_check(self):
-        # This method retreivings the latest release version from GitHub
+        '''
+        This method retreives the latest release version from GitHub
+        '''
         import requests
-        r = requests.get('https://api.github.com/repos/Kleissl/HollowRC/releases/latest')
-        # print(r)
+        url = 'https://api.github.com/repos/Kleissl/HollowRC/releases/latest'
+        r = requests.get(url)
         if r.status_code == 200:
             # print(r.headers['content-type'])
             data = r.json()
@@ -635,12 +692,12 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             #     print(key, 'corresponds to', data[key])
             latest_tag = data['tag_name']
             published = data['published_at']
-            print('The latest release (' + latest_tag +') was published at ' + published)
+            print('The latest release (' + latest_tag + ') was published at ' + published)
             if latest_tag == self.tag:
                 msg_str = 'Version up-to-date'
-                msg_info_str = 'The current version ('+ self.tag +') matches the latest release from https://github.com/Kleissl/HollowRC/releases/latest'
+                msg_info_str = 'The current version (' + self.tag + ') matches the latest release from https://github.com/Kleissl/HollowRC/releases/latest'
             else:
-                msg_str = 'The application ('+ self.tag +') is NOT up-to-date!'
+                msg_str = 'The application (' + self.tag + ') is NOT up-to-date!'
                 msg_info_str = 'There is a newer release (' + latest_tag + ') from ' + published + ' available for download at https://github.com/Kleissl/HollowRC/releases/latest'
             print(msg_str)
             self.show_msg_box([msg_str, msg_info_str], title='Information')

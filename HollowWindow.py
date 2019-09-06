@@ -79,14 +79,15 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             check_box.stateChanged.connect(self.refresh_visible_plots)
             check_boxes.append(check_box)
         self.graphicsViewResults.set_check_boxes(check_boxes)
+
         obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
                     'alpha_cc', 'gamma_c', 'gamma_s']
-
         for string in obj_list:
             # get e.g. obj = self.lineEdit_f_ck
             obj = getattr(self, 'lineEdit_' + string)
             # update material plot if any of the inputs changes
-            obj.textChanged.connect(self.material_plot)
+            obj.textEdited.connect(self.material_changed)
+            obj.editingFinished.connect(self.material_editingFinished)  # textChanged/textEdited/editingFinished?
         self.comboBox_nu.currentIndexChanged.connect(self.material_plot)
         self.comboBox_concrete.currentIndexChanged.connect(self.material_plot)
         self.comboBox_reinf.currentIndexChanged.connect(self.material_plot)
@@ -413,7 +414,55 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.coordinates_tableWidget.blockSignals(False)
         self.geometry_plot()
 
+    def material_changed(self, signal_value):
+        '''
+        This method is executed when the material inputs are changed.
+        Live update the plots when positive floats are provided
+        '''
+        try:
+            value = float(signal_value)   # convert item text to float
+            if value > 0:
+                self.material_plot()
+        except Exception as e:
+            pass
+
+    def material_editingFinished(self):
+        '''
+        This method is executed when a material input is finished editing.
+        Thorough check of all material inputs + resets invalid inputs
+        '''
+        # getting the ext inputs or overwriting bad content
+        string_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                       'alpha_cc', 'gamma_c', 'gamma_s']
+
+        # get e.g. obj = self.lineEdit_f_ck
+        obj_list = [getattr(self, 'lineEdit_' + s) for s in string_list]
+
+        # changing focus to another tracked input yields double exec
+        # All objects are therefore initially blocked
+        for obj in obj_list:
+            obj.blockSignals(True)
+
+        for obj, string in zip(obj_list, string_list):
+            try:
+                value = float(obj.text())   # convert item text to float
+                if value <= 0:
+                    raise ValueError
+                # setattr(Mat, string, value)  # Send input value to class
+            except Exception as e:
+                self.show_msg_box(['Material input error', 'Input value "{}" for {} is not valid. {} returned to default value.'.format(obj.text(), string, string)])
+                Mat = Material.MatProp()
+                value = getattr(Mat, string)  # Get default value from material class
+                obj.setText(str(value))  # Replace bad item content
+                self.material_plot()  # plot default value
+
+        for obj in obj_list:
+            obj.blockSignals(False)
+
     def getMaterial(self):
+        '''
+        Build material instance from material input cells
+        '''
         # initiate material instance
         Mat = Material.MatProp()
 
@@ -428,15 +477,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         for string in obj_list:
             # get e.g. obj = self.lineEdit_f_ck
             obj = getattr(self, 'lineEdit_' + string)
-            try:
-                value = float(obj.text())   # convert item text to float
-                if value == 0:
-                    raise ValueError
-                setattr(Mat, string, value)  # Send input value to class
-            except ValueError:
-                self.show_msg_box(['Material input error', 'Input value "{}" for {} is not valid. {} returned to default value.'.format(obj.text(), string, string)])
-                value = getattr(Mat, string)   # Get default value from class
-                obj.setText(str(value))     # Replace bad item content
+            value = float(obj.text())   # convert item text to float
+            setattr(Mat, string, value)  # Send input value to class
 
         Mat.update_strengths()
         return Mat
@@ -565,7 +607,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 row_values.append(0.0)                          # Add zero to list
         return row_values
 
-    def geometry_plot(self): 
+    def geometry_plot(self):
         self.graphicsViewGeometry.awaits_click = False          # properly triggered by manual change in geometry table thus no longer awaits node_coords_by_click
         section = self.getGeometry()                            # Load geometry data
         self.graphicsViewGeometry.plot_all(section)             # update plot

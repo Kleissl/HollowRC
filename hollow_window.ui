@@ -28,7 +28,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab_about">
          <attribute name="title">
@@ -289,7 +289,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QTableWidget" name="coordinates_tableWidget">
+               <widget class="QTableWidget" name="geometry_table">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -420,10 +420,16 @@
                  <property name="text">
                   <string>0.01</string>
                  </property>
+                 <property name="toolTip">
+                  <string>3000 mm2/m</string>
+                 </property>
                 </item>
                 <item row="0" column="4">
                  <property name="text">
                   <string>0.01</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>3000 mm2/m</string>
                  </property>
                 </item>
                 <item row="1" column="0">
@@ -445,10 +451,16 @@
                  <property name="text">
                   <string>0.01</string>
                  </property>
+                 <property name="toolTip">
+                  <string>2000 mm2/m</string>
+                 </property>
                 </item>
                 <item row="1" column="4">
                  <property name="text">
                   <string>0.01</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>2000 mm2/m</string>
                  </property>
                 </item>
                 <item row="2" column="0">
@@ -470,10 +482,16 @@
                  <property name="text">
                   <string>0.01</string>
                  </property>
+                 <property name="toolTip">
+                  <string>3000 mm2/m</string>
+                 </property>
                 </item>
                 <item row="2" column="4">
                  <property name="text">
                   <string>0.01</string>
+                 </property>
+                 <property name="toolTip">
+                  <string/>
                  </property>
                 </item>
                 <item row="3" column="0">
@@ -495,10 +513,16 @@
                  <property name="text">
                   <string>0.01</string>
                  </property>
+                 <property name="toolTip">
+                  <string>2000 mm2/m</string>
+                 </property>
                 </item>
                 <item row="3" column="4">
                  <property name="text">
                   <string>0.01</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>2000 mm2/m</string>
                  </property>
                 </item>
                </widget>

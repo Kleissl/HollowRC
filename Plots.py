@@ -1,19 +1,21 @@
 import math
 from PySide2 import QtGui, QtWidgets, QtCore, QtCharts  # Import the Qt modules we'll need
 
-# New Classes for my plot scenes
+
 class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
+    '''
+    Classes for my plot scenes
+    '''
     # def __init__(self):
     #     # super(TableInterface, self).__init__()  # use super so we return parent object of this class
     #     super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
-        # QMainWindow.__init__(self)
+    #     QMainWindow.__init__(self)
+
+    # Signals
     new_section = QtCore.Signal(object)  # prepare "new_section" signal
     scene_clicked = QtCore.Signal(object)  # prepare "scene_clicked" signal
 
     def __init__(self, *args, **kwargs):
-        """
-        ...
-        """
         QtWidgets.QGraphicsView.__init__(self, *args, **kwargs)
         # QtCore.QObject.__init__(self)  # the QQbject is for the signal            <---- RuntimeError: You can't initialize an object twice!
 
@@ -124,7 +126,7 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
             circle = MyEllipse(X1 - radi, -(Y1 + radi), radi * 2.0, radi * 2.0)
             circle.setAcceptHoverEvents(True)
             circle.set_wall_id(i)
-            
+
             circle.setPen(thin_pencil)
             circle.setBrush(blue_fill)
             circle.node_moved.connect(self.update_section)  # call update_section method if a node_moved signal is received

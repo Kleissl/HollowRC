@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Executable for the MembraneRC GUI
-This code execute the GUI application ...
+This code execute the GUI application
 
 Author: Kenneth C. Kleissl
 """

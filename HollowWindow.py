@@ -33,7 +33,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # self.geometry_table = TableInterface.MyTable(self.geometry_table)
 
         # version tag and label
-        self.tag = 'v1.3'
+        self.tag = 'v1.4'
         self.label_version.setText(self.tag)
 
         # --- Triggers ---

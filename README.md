@@ -2,9 +2,15 @@
 A Python libary for general design of hollow reinforced concrete sections under combined actions packed into an easy to use executable.
 
 ## Getting Started - Installation
+The easy way:
 1. Download the latest release from https://github.com/Kleissl/HollowRC/releases/latest
 2. Unzip the distribution package
 3. Execute HollowRC.exe
+
+If you're familar with Python and prefer to run the code directly:
+1. Fork/clone the repository or download the [zipped master-branch source code](https://github.com/Kleissl/HollowRC/archive/master.zip)
+2. Pip install requirements.txt
+3. Run python main.py
 
 ## About
 This is an easy to use design tool for analysis of hollow reinforced concrete sections under combined loading, fully embracing the interactions between bending and shear behaviour.
@@ -70,7 +76,7 @@ Section forces:
 * Positive T (torsion) yields counter-clockwise shear flow
 
 ## Issues
-If you experience a problem with the application package please raise an issue on this GitHub repository. 
+If you experience a problem with the application please provide the feedback by raising an issue on this GitHub repository ([New issue](https://github.com/Kleissl/HollowRC/issues/new)).
 
 ## Versioning
 For the versions available, see the [tags on this repository](https://github.com/Kleissl/HollowRC/tags). 

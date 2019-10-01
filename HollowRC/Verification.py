@@ -193,10 +193,10 @@ class Verify:  # consider renaming to DiskRC or similar
         sigma_sy = x[2]
         theta = x[3]
         # equilibrium error
-        self.rho_c_eq = self.rho_sx * math.cos(math.radians(theta)) ** 2 + self.rho_sy * math.sin(math.radians(theta)) ** 2
-        result[0] = -self.sigma_x + (1 - self.rho_c_eq) * sigma_c * math.cos(math.radians(theta)) ** 2 + self.rho_sx * sigma_sx
-        result[1] = -self.sigma_y + (1 - self.rho_c_eq) * sigma_c * math.sin(math.radians(theta)) ** 2 + self.rho_sy * sigma_sy
-        result[2] = -abs(self.tau) - (1 - self.rho_c_eq) * sigma_c * math.sin(math.radians(theta)) * math.cos(math.radians(theta))
+        self.rho_c_eq = self.rho_sx * cos_deg(theta) ** 2 + self.rho_sy * sin_deg(theta) ** 2
+        result[0] = -self.sigma_x + (1 - self.rho_c_eq) * sigma_c * cos_deg(theta) ** 2 + self.rho_sx * sigma_sx
+        result[1] = -self.sigma_y + (1 - self.rho_c_eq) * sigma_c * sin_deg(theta) ** 2 + self.rho_sy * sigma_sy
+        result[2] = -abs(self.tau) - (1 - self.rho_c_eq) * sigma_c * sin_deg(theta) * cos_deg(theta)
         return result
 
     def cracked_strut_angle(self):
@@ -217,28 +217,28 @@ class Verify:  # consider renaming to DiskRC or similar
         if self.tau == 0 and self.sigma_x < 0 and self.sigma_y < 0:
             print('Bi-axial compression with no shear detected when calculating cracked equilibrium!')
             return
-        self.rho_c_eq = self.rho_sx * math.cos(math.radians(theta))**2 + self.rho_sy * math.sin(math.radians(theta))**2
+        self.rho_c_eq = self.rho_sx * cos_deg(theta)**2 + self.rho_sy * sin_deg(theta)**2
         try:
             # print('stresses: ', self.sigma_x, self.sigma_y, self.tau)
-            sigma_c = -abs(self.tau) * (math.tan(math.radians(theta)) + 1 / math.tan(math.radians(theta))) / (1 - self.rho_c_eq)  # Diagonal concrete stress (negative = compression)
-            # sigma_c = -abs(self.tau) / math.sin(math.radians(theta)) / math.cos(math.radians(theta)) / (1 - rho_c_eq)  # this version triggers double scalar divide by zero exception...
-            # sigma_sx = 1 / self.rho_sx * (self.sigma_x + abs(self.tau) / math.tan(math.radians(theta)))     # Horizontal reinforcement stress (positive = tension)
-            # sigma_sy = 1 / self.rho_sy * (self.sigma_y + abs(self.tau) * math.tan(math.radians(theta)))     # Vertical reinforcement stress (positive = tension)
-            sigma_sx = 1 / self.rho_sx * (self.sigma_x - (1 - self.rho_c_eq) * sigma_c * math.cos(math.radians(theta)) ** 2)
-            sigma_sy = 1 / self.rho_sy * (self.sigma_y - (1 - self.rho_c_eq) * sigma_c * math.sin(math.radians(theta)) ** 2)
+            sigma_c = -abs(self.tau) * (tan_deg(theta) + 1 / tan_deg(theta)) / (1 - self.rho_c_eq)  # Diagonal concrete stress (negative = compression)
+            # sigma_c = -abs(self.tau) / sin_deg(theta) / cos_deg(theta) / (1 - rho_c_eq)  # this version triggers double scalar divide by zero exception...
+            # sigma_sx = 1 / self.rho_sx * (self.sigma_x + abs(self.tau) / tan_deg(theta))     # Horizontal reinforcement stress (positive = tension)
+            # sigma_sy = 1 / self.rho_sy * (self.sigma_y + abs(self.tau) * tan_deg(theta))     # Vertical reinforcement stress (positive = tension)
+            sigma_sx = 1 / self.rho_sx * (self.sigma_x - (1 - self.rho_c_eq) * sigma_c * cos_deg(theta) ** 2)
+            sigma_sy = 1 / self.rho_sy * (self.sigma_y - (1 - self.rho_c_eq) * sigma_c * sin_deg(theta) ** 2)
             if theta == 0.0 or theta == 90.0:
                 raise ZeroDivisionError   # num. rounding sometimes fails to raise error
         except ZeroDivisionError:
             if self.tau == 0:
                 # for no shear and the diagonal strut should be aligned with possible uniaxial compression
-                if theta == 0 or abs(math.sin(math.radians(theta))) < 10**-12:
+                if theta == 0 or abs(sin_deg(theta)) < 10**-12:
                     if self.sigma_x < 0 and self.sigma_x < self.sigma_y:
                         sigma_c = self.sigma_x / (1 - self.rho_sx + self.rho_sx * self.Mat.E_s / self.Mat.E_cm)  # only linear elastic range!
                     else:
                         sigma_c = 0
                     sigma_sx = (self.sigma_x - (1 - self.rho_sx) * sigma_c) / self.rho_sx
                     sigma_sy = self.sigma_y / self.rho_sy
-                elif theta == 90 or abs(math.cos(math.radians(theta))) < 10**-12:
+                elif theta == 90 or abs(cos_deg(theta)) < 10**-12:
                     if self.sigma_y < 0 and self.sigma_y < self.sigma_x:
                         sigma_c = self.sigma_y / (1 - self.rho_sy + self.rho_sy * self.Mat.E_s / self.Mat.E_cm)  # only linear elastic range!
                     else:
@@ -266,7 +266,27 @@ class Verify:  # consider renaming to DiskRC or similar
         return W_e  # [Nmm/mm] energy/thickness
 
 
-# For when this script is excetuted on its own
+def cos_deg(deg):
+    """
+    Cosine function that takes the angle in degrees as input
+    """
+    return math.cos(math.radians(deg))
+
+
+def sin_deg(deg):
+    """
+    Sine function that takes the angle in degrees as input
+    """
+    return math.sin(math.radians(deg))
+
+
+def tan_deg(deg):
+    """
+    Tangent function that takes the angle in degrees as input
+    """
+    return math.tan(math.radians(deg))
+
+
 if __name__ == '__main__':
     sigma_x = -8877.85/300  # long.
     sigma_y = 0  # trans.
@@ -274,8 +294,8 @@ if __name__ == '__main__':
     stresses = [sigma_x, sigma_y, tau]
     rho_sx = 0.01  # long.
     rho_sy = 0.01  # trans.
-    import Material
-    Mat = Material.MatProp()
+    from Material import MatProp
+    Mat = MatProp()
     verification = Verify(stresses, Mat, rho_sx, rho_sy)  # run the main function
 
     print('principal_stresses: ', verification.principal_stresses())
@@ -285,10 +305,10 @@ if __name__ == '__main__':
     stresses = verification.cracked_equilibrium(theta)
     print('cracked_equilibrium: ', stresses)
     # print('complementary_energy: ', verification.complementary_energy(stresses))
-    # rho_c_eq = rho_sx * math.cos(math.radians(theta))**2 + rho_sy * math.sin(math.radians(theta))**2
-    # print('error1 = ', -sigma_x + (1 - rho_c_eq) * stresses['sigma_c'] * math.cos(math.radians(theta)) ** 2 + rho_sx * stresses['sigma_sx'])
-    # print('error2 = ', -sigma_y + (1 - rho_c_eq) * stresses['sigma_c'] * math.sin(math.radians(theta)) ** 2 + rho_sy * stresses['sigma_sy'])
-    # print('error3 = ', -abs(tau) - (1 - rho_c_eq) * stresses['sigma_c'] * math.sin(math.radians(theta)) * math.cos(math.radians(theta)))
+    # rho_c_eq = rho_sx * cos_deg(theta)**2 + rho_sy * sin_deg(theta)**2
+    # print('error1 = ', -sigma_x + (1 - rho_c_eq) * stresses['sigma_c'] * cos_deg(theta) ** 2 + rho_sx * stresses['sigma_sx'])
+    # print('error2 = ', -sigma_y + (1 - rho_c_eq) * stresses['sigma_c'] * sin_deg(theta) ** 2 + rho_sy * stresses['sigma_sy'])
+    # print('error3 = ', -abs(tau) - (1 - rho_c_eq) * stresses['sigma_c'] * sin_deg(theta) * cos_deg(theta))
     # print('Nx_check = ', (1-rho_sx)*stresses['sigma_c']*200 + stresses['sigma_sx']*200*rho_sx)
 
     # x = verification.min_comp_energy([stresses['sigma_c'], stresses['sigma_sx'], stresses['sigma_sy'], theta])

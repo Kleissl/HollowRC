@@ -2,16 +2,21 @@
 """
 Class definition of an in-plane verification of a concrete disk
 
-History log:
-Version 0.1 - first working build
-
 Author: Kenneth C. Kleissl
 """
 import math
+import nlopt
 
-class Verify:
+
+class Verify:  # consider renaming to DiskRC or similar
     """
-    A point verification of in-plane loaded reinforced concrete disk by Kenneth C. Kleissl.
+    A point verification of in-plane loaded reinforced concrete disk
+
+    Inputs:
+        stress: the three stress components
+        Mat: a material instance
+        rho_sx: reinforcement ratio in the x-direction
+        rho_sy: reinforcement ratio in the y-direction
 
     Attributes:
         sigma_min: Minimal principal stress (largest compression / least tension).
@@ -29,7 +34,7 @@ class Verify:
         self.sigma_x = stress[0]
         self.sigma_y = stress[1]
         self.tau = stress[2]
-        if abs(self.tau) < 1e-6:  # replace near zero tau values with zero tau to ensure exception triggering
+        if abs(self.tau) < 1e-6:  # set near zero tau values to zero to ensure exception triggering
             self.tau = 0.0
 
         # Material parameters
@@ -42,7 +47,8 @@ class Verify:
         self.nu = self.concrete_efficiency()
 
     def concrete_efficiency(self):
-        nu = 0.6 * (1 - self.Mat.f_ck / 250)  # not corrected for plastic rotation, wholly in compression etc.
+        # not corrected for plastic rotation, wholly in compression etc.
+        nu = 0.6 * (1 - self.Mat.f_ck / 250)
         return nu
 
     def principal_stresses(self):
@@ -153,8 +159,7 @@ class Verify:
             return False  # Uncracked
 
     def min_comp_energy(self, x0=[-10, 0, 0, 45]):
-        import nlopt
-          # [sigma_c, sigma_sx, sigma_sy, theta]
+        # [sigma_c, sigma_sx, sigma_sy, theta]
         # initiate optimization instance
         opt = nlopt.opt(nlopt.LN_COBYLA, len(x0))
         opt.set_lower_bounds([-float('inf'), -float('inf'), -float('inf'), 0])
@@ -196,16 +201,18 @@ class Verify:
 
     def cracked_strut_angle(self):
         # slope of cracks/concrete compression
-        import nlopt
         theta_0 = [45.0]  # initial guess of 45 degrees
         opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(theta_0))
-        my_objective = lambda theta, grad: self.complementary_energy(self.cracked_equilibrium(theta[0]))
-        opt.set_min_objective(my_objective)
+        opt.set_min_objective(lambda theta, grad: self.complementary_energy(self.cracked_equilibrium(theta[0])))
         opt.set_xtol_rel(1e-8)
         theta = opt.optimize(theta_0)
         return theta[0]
 
-    def cracked_equilibrium(self, theta):    # should not be used if section is not cracked
+    def cracked_equilibrium(self, theta):
+        """
+        Computes concrete and reinforcement stress for given strut angle theta
+        should not be used if section is not cracked
+        """
         # print('theta: ', theta)
         if self.tau == 0 and self.sigma_x < 0 and self.sigma_y < 0:
             print('Bi-axial compression with no shear detected when calculating cracked equilibrium!')
@@ -261,33 +268,31 @@ class Verify:
 
 # For when this script is excetuted on its own
 if __name__ == '__main__':
-    sigma_x = -2461.7976/200  # long.
+    sigma_x = -8877.85/300  # long.
     sigma_y = 0  # trans.
-    tau = -4.410480869410094e-6
+    tau = 0
     stresses = [sigma_x, sigma_y, tau]
-    rho_sx = 0.02  # long.
+    rho_sx = 0.01  # long.
     rho_sy = 0.01  # trans.
     import Material
     Mat = Material.MatProp()
     verification = Verify(stresses, Mat, rho_sx, rho_sy)  # run the main function
 
     print('principal_stresses: ', verification.principal_stresses())
-    print('utilization and mechanism: ', verification.utilization(), verification.mechanism)
+    # print('utilization and mechanism: ', verification.utilization(), verification.mechanism)
     theta = verification.cracked_strut_angle()
     print('optimized theta = ', theta)
     stresses = verification.cracked_equilibrium(theta)
     print('cracked_equilibrium: ', stresses)
-    print('complementary_energy: ', verification.complementary_energy(stresses))
-    rho_c_eq = rho_sx * math.cos(math.radians(theta))**2 + rho_sy * math.sin(math.radians(theta))**2
-    print('error1 = ', -sigma_x + (1 - rho_c_eq) * stresses['sigma_c'] * math.cos(math.radians(theta)) ** 2 + rho_sx * stresses['sigma_sx'])
-    print('error2 = ', -sigma_y + (1 - rho_c_eq) * stresses['sigma_c'] * math.sin(math.radians(theta)) ** 2 + rho_sy * stresses['sigma_sy'])
-    print('error3 = ', -abs(tau) - (1 - rho_c_eq) * stresses['sigma_c'] * math.sin(math.radians(theta)) * math.cos(math.radians(theta)))
-    print('Nx_check = ', (1-rho_sx)*stresses['sigma_c']*200 + stresses['sigma_sx']*200*rho_sx)
+    # print('complementary_energy: ', verification.complementary_energy(stresses))
+    # rho_c_eq = rho_sx * math.cos(math.radians(theta))**2 + rho_sy * math.sin(math.radians(theta))**2
+    # print('error1 = ', -sigma_x + (1 - rho_c_eq) * stresses['sigma_c'] * math.cos(math.radians(theta)) ** 2 + rho_sx * stresses['sigma_sx'])
+    # print('error2 = ', -sigma_y + (1 - rho_c_eq) * stresses['sigma_c'] * math.sin(math.radians(theta)) ** 2 + rho_sy * stresses['sigma_sy'])
+    # print('error3 = ', -abs(tau) - (1 - rho_c_eq) * stresses['sigma_c'] * math.sin(math.radians(theta)) * math.cos(math.radians(theta)))
+    # print('Nx_check = ', (1-rho_sx)*stresses['sigma_c']*200 + stresses['sigma_sx']*200*rho_sx)
 
-
-
-    x = verification.min_comp_energy([stresses['sigma_c'], stresses['sigma_sx'], stresses['sigma_sy'], theta])
-    print('new optimization: ', x)
-    print('error1 = ', -sigma_x + (1 - rho_c_eq) * x[0] * math.cos(math.radians(x[-1])) ** 2 + rho_sx * x[1])
-    print('error2 = ', -sigma_y + (1 - rho_c_eq) * x[0] * math.sin(math.radians(x[-1])) ** 2 + rho_sy * x[2])
-    print('error3 = ', -abs(tau) - (1 - rho_c_eq) * x[0] * math.sin(math.radians(x[-1])) * math.cos(math.radians(x[-1])))
+    # x = verification.min_comp_energy([stresses['sigma_c'], stresses['sigma_sx'], stresses['sigma_sy'], theta])
+    # print('new optimization: ', x)
+    # print('error1 = ', -sigma_x + (1 - rho_c_eq) * x[0] * math.cos(math.radians(x[-1])) ** 2 + rho_sx * x[1])
+    # print('error2 = ', -sigma_y + (1 - rho_c_eq) * x[0] * math.sin(math.radians(x[-1])) ** 2 + rho_sy * x[2])
+    # print('error3 = ', -abs(tau) - (1 - rho_c_eq) * x[0] * math.sin(math.radians(x[-1])) * math.cos(math.radians(x[-1])))

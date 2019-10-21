@@ -1,8 +1,14 @@
 language: python
+
 python:
   - "3.7"
+
 cache: pip
+
+# command to install dependencies
 install:
   - pip install -r requirements.txt
+
+# command to run tests
 script:
-  - python tests\test_Verification.py
+  - pytest

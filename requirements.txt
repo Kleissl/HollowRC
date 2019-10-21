@@ -8,7 +8,7 @@ PySide2==5.11.2
 numpy==1.15.3
 
 # General optimization solver
-NLopt==2.4.2
+nlopt==2.6.1
 
 # for building executable
 PyInstaller==3.4

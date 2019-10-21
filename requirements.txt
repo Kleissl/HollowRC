@@ -2,19 +2,19 @@
 # To install, run: "pip install -r requirements.txt"
 
 # for the GUI
-PySide2==5.11.2
+PySide2==5.13.1
 
 # for math and array functionalities
-numpy==1.15.3
+numpy==1.16.4
 
 # General optimization solver
 nlopt==2.6.1
 
 # for building executable
-PyInstaller==3.4
+PyInstaller==3.5
 
 # for calling Githib API
-requests==2.21.0
+requests==2.22.0
 
 # for unit testing
 pytest==5.2.0

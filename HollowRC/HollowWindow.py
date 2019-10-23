@@ -468,11 +468,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # initiate material instance
         Mat = Material.MatProp()
 
-        # get combobox selections
-        Mat.conc_method = self.comboBox_concrete.currentText()
-        Mat.reinf_method = self.comboBox_reinf.currentText()
-        # Mat.nu_method = self.comboBox_nu.currentText()
-
         # getting the ext inputs or overwriting bad content     <-- OVERWRITES SHOULD HAPPEN ON CHANGED-SIGNAL
         obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
                     'alpha_cc', 'gamma_c', 'gamma_s']
@@ -480,9 +475,28 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             # get e.g. obj = self.lineEdit_f_ck
             obj = getattr(self, 'lineEdit_' + string)
             value = float(obj.text())   # convert item text to float
-            setattr(Mat, string, value)  # Send input value to class
+            setattr(Mat, string, value)  # Send input value to class  <-- should use setter-method
 
-        Mat.update_strengths()
+        Mat.update_strengths()  # need to update as f_ck attribute could have been changed
+
+        # set combobox selections (must be after strength update as it updates the stiffnesses)
+        conc_method = self.comboBox_concrete.currentText()
+        reinf_method = self.comboBox_reinf.currentText()
+        Mat.set_methods(conc_method, reinf_method)
+        # Mat.set_nu_method = self.comboBox_nu.currentText()
+
+        # check if stiffness is assignable and update window accordingly
+        assignable, E_cm = Mat.is_conc_stiffness_assignable()
+        if not assignable:
+            self.lineEdit_E_cm.setDisabled(True)
+            # self.stored_E_cm = self.lineEdit_E_cm.text()
+            self.lineEdit_E_cm.setText(str(round(E_cm, 4)))
+        elif not self.lineEdit_E_cm.isEnabled():
+            E_cm = Material.MatProp.E_cm  # load class default E_cm
+            Mat.E_cm = E_cm
+            self.lineEdit_E_cm.setText(str(E_cm))
+            self.lineEdit_E_cm.setDisabled(False)
+
         return Mat
 
     def set_material(self, Mat):

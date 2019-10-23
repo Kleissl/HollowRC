@@ -30,7 +30,7 @@ def measure_time(func):
         result = func(*args, **kw)
         end = timer()
         # print execution time
-        print(f'Analysis executed in {round(end - start, 1)} seconds')
+        print(f'Analysis executed in {round(end - start, 2)} seconds')
         return result
     return timed
 
@@ -327,12 +327,14 @@ def SLS_analysis(section, SF, Mat):
     theta, sigma_c, sigma_sx, sigma_sy = [], [], [], []
     i = 0
     for wall in section.walls:  # looping over walls
+        theta_0 = 45.0  # initial guess for theta angle
         for j in range(wall.wallNodeN):  # looping over wall data points
             sigma_x = dist['normal_flow'][i] / wall.thick
             tau = H[i] / wall.thick
             stress = [sigma_x, 0, tau]
             verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
-            theta.append(verification.cracked_strut_angle())
+            theta.append(verification.cracked_strut_angle(initial_guess=theta_0))
+            theta_0 = theta[-1]  # memorize theta for initial guess
             stresses = verification.cracked_equilibrium(theta[i])
             sigma_c.append(stresses['sigma_c'])
             sigma_sx.append(stresses['sigma_sx'])

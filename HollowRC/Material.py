@@ -4,7 +4,7 @@ Class definition of a container for material properties
 
 Author: Kenneth C. Kleissl
 """
-
+import nlopt
 
 class MatProp:
     """
@@ -92,7 +92,7 @@ class MatProp:
         n = 2
         eps_cu2 = 0.0035
 
-        # convert sign of strain so positive strain corresponds to compression vice versa.
+        # convert sign of strain such that positive eps_c corresponds to compression vice versa.
         eps_c = -strain
 
         # calculate concrete compressive stress
@@ -212,9 +212,39 @@ class MatProp:
 
         return ReinforcementStress
 
+    def composite_stress(self, rho, eps):
+        reinf_stress = self.reinforcementStress(eps)
+        concrete_stress = self.concreteStress(eps)
+        return concrete_stress * (1 - rho) + reinf_stress * rho
+
+    def composite_strain(self, rho, sigma):
+        """
+        determine strain for given composite stress with reinforcement ratio of rho
+        """
+        if sigma > 0:
+            eps_0 = [sigma/rho/self.E_s/1000]  # initial guess for tension
+        else:
+            eps_0 = [-0.001]  # initial guess for compression
+        # print(f'eps_0 = {eps_0[0]}')
+        opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(eps_0))
+        opt.set_min_objective(lambda eps, grad: (sigma - self.composite_stress(rho, eps[0]))**2)
+        opt.set_xtol_rel(1e-4)  # stress error tolerance
+        eps = opt.optimize(eps_0)
+        return eps[0]
+
 
 # For when this script is excetuted on its own
 if __name__ == '__main__':
 
     Mat = MatProp()
     print(Mat.f_ck, Mat.f_ct, Mat.f_yk, Mat.concreteStress(-0.002), Mat.reinforcementStress(-0.002), Mat.E_cm)
+
+    rho = 0.01
+    strain = Mat.composite_strain(rho, -25)
+    print(f'strain = {strain}')
+    composite_stress = Mat.composite_stress(rho, strain)
+    print(f'composite_stress = {composite_stress}')
+    concrete_stress = Mat.concreteStress(strain)
+    print(f'concrete_stress = {concrete_stress}')
+    reinf_stress = Mat.reinforcementStress(strain)
+    print(f'reinf_stress = {reinf_stress}')

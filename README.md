@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/kleissl/hollowrc.svg?branch=master)](https://api.travis-ci.org/kleissl/hollowrc.svg)
+
 # HollowRC
 A Python libary for general design of hollow reinforced concrete sections under combined actions packed into an easy to use executable.
 

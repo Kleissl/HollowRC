@@ -15,6 +15,3 @@ PyInstaller==3.5
 
 # for calling Githib API
 requests==2.22.0
-
-# for unit testing
-pytest==5.2.0

@@ -1,14 +1,26 @@
+# Disable sudo to speed up the build
+# sudo: false
+
+# Set the build language to Python
 language: python
 
+# Set the build language to Python
 python:
   - "3.7"
 
 cache: pip
 
-# command to install dependencies
+# Install the pip dependencies
 install:
   - pip install -r requirements.txt
+  - pip install pytest==5.2.0
+  - pip install pytest-cov==2.8.1
+  - pip install codecov==2.0.15
 
-# command to run tests
+# Run the unit tests
 script:
-  - pytest
+  - pytest --cov=./HollowRC/ --cov-report=xml
+
+# Push the results back to codecov
+after_success:
+  - codecov

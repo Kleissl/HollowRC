@@ -14,8 +14,8 @@ cache: pip
 install:
   - pip install -r requirements.txt
   - pip install pytest==5.2.0
-  - pip install pytest-cov=2.8.1
-  - pip install codecov=2.0.15
+  - pip install pytest-cov==2.8.1
+  - pip install codecov==2.0.15
 
 # Run the unit tests
 script:

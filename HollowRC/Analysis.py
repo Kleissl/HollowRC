@@ -52,13 +52,13 @@ def ULS_analysis(section, SF, Mat):
 
     V_wall = []
     for i, wall in enumerate(section.walls):  # looping over walls
-            j_start = i * wall.wallNodeN
-            j_end = (i + 1) * wall.wallNodeN
-            # define weights/eff. length for each node
-            ds = [0.5 * wall.length / (wall.wallNodeN - 1) if i in (0, wall.wallNodeN - 1) else wall.length / (
-                        wall.wallNodeN - 1) for i in range(wall.wallNodeN)]
-            # Integrate optimized shear flow
-            V_wall.append(sum(ds * H[j_start:j_end]) / 1000)
+        j_start = i * wall.wallNodeN
+        j_end = (i + 1) * wall.wallNodeN
+        # define weights/eff. length for each node
+        ds = [0.5 * wall.length / (wall.wallNodeN - 1) if i in (0, wall.wallNodeN - 1) else wall.length / (
+                    wall.wallNodeN - 1) for i in range(wall.wallNodeN)]
+        # Integrate optimized shear flow
+        V_wall.append(sum(ds * H[j_start:j_end]) / 1000)
     # print('dual section V_wall:', V_wall)
 
     # --------------- Optimize shear flow distribution (on wall level) ---------------
@@ -158,7 +158,8 @@ def ULS_analysis(section, SF, Mat):
     if 1 - xopt[-1] < 1e-10:  # sufficiently close (within tolorance) to be considered as one
         error_msg = None
     else:
-        error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]), "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
+        error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]),
+                     "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
         # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
         #          str(xopt[-1])]
 
@@ -303,7 +304,7 @@ def integrateWallShearForces(V, section):
         # Integrate for shear sectional forces
         Vy.append(-V[i] * math.cos(wall.angle))  # Vy (negative as geometry is define opposite positive wall force)
         Vz.append(-V[i] * math.sin(wall.angle))  # Vz
-        T.append(  V[i] * e[i] / 1000)  # T
+        T.append(V[i] * e[i] / 1000)  # T
 
     return sum(Vy), sum(Vz), sum(T)
 
@@ -334,7 +335,7 @@ def SLS_analysis(section, SF, Mat):
             stress = [sigma_x, 0, tau]
             verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
             theta.append(verification.cracked_strut_angle(initial_guess=theta_0))
-            theta_0 = theta[-1]  # memorize theta for initial guess
+            # theta_0 = theta[-1]  # memorize theta for initial guess <-- suppressed as it yields theta outside acceptable
             stresses = verification.cracked_equilibrium(theta[i])
             sigma_c.append(stresses['sigma_c'])
             sigma_sx.append(stresses['sigma_sx'])
@@ -488,7 +489,8 @@ def bendingSolution(x0, section, SF, Mat):
         print("Failed to find bending equilibrium, try with less load")
         raise MyOptimizerError("Failed to find bending equilibrium", "The section cannot sustain the bending loads applied. Try with less load.")
 
-        # If bending equilibrium fails -> capacity is insufficient -> intro. load factor and minimize it under error constraint -> yields a UR / lambda_bending factor
+        # If bending equilibrium fails -> capacity is insufficient -> intro. 
+        # load factor and minimize it under error constraint -> yields a UR / lambda_bending factor
         # ------- need to implement gradients for optimization below ------
         # print("Error too big!, steps over to bigger problem including load factor")
         # # initial guess
@@ -682,7 +684,8 @@ def ReinforcementStressAry(eps, Mat):
 #     if 1 - xopt[-1] < 1e-10: # sufficiently close (within tolorance) to be considered as one
 #         error_msg = None
 #     else:
-#         error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]), "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
+#         error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]), 
+#                      "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
 #         # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
 #         #          str(xopt[-1])]
 
@@ -755,7 +758,8 @@ def ReinforcementStressAry(eps, Mat):
 #     # set constraint
 #     # opt.add_equality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, Mat), 1e-8)
 #     # opt.add_inequality_constraint(lambda x, grad: errorFunShear(x, Geometry, SF, dist), 1e-6)  # feasible if func < tol
-#     opt.add_equality_mconstraint(lambda result, x, grad: myShearConstraints(result, x, grad, section, SF, dist), [1e-6, 1e-6, 1e-6])  # feasible if func < tol
+#     opt.add_equality_mconstraint(lambda result, x, grad: myShearConstraints(result, x, grad, section, SF, dist),
+#                                  [1e-6, 1e-6, 1e-6])  # feasible if func < tol
 #     # opt.add_inequality_constraint(lambda x, grad: myYieldConstraint(x, dist), 1e-8)
 #     # tolerances
 #     opt.set_xtol_rel(1e-8)

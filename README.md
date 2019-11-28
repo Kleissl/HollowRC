@@ -58,7 +58,7 @@ An interactive shaded visualisation with overlaying of user-specified results al
 
 ### Sign convention
 The sign convention generally follows a right hand system (RHS). See illustration in figure below.
-![Coordinates and sign convention](./resources/coordinates_and_sign_convention.png)
+![Coordinates and sign convention](HollowRC/resources/coordinates_and_sign_convention.png)
 
 Geometry:
 * All dimensions are in millimeters

@@ -1,5 +1,6 @@
 [![Build Status](https://api.travis-ci.org/kleissl/hollowrc.svg?branch=master)](https://api.travis-ci.org/kleissl/hollowrc.svg)
 [![codecov](https://codecov.io/gh/Kleissl/HollowRC/branch/master/graph/badge.svg)](https://codecov.io/gh/Kleissl/HollowRC)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/41753e1cc75d466daf440d499e7543e1)](https://www.codacy.com/manual/Kleissl/HollowRC?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Kleissl/HollowRC&amp;utm_campaign=Badge_Grade)
 
 # HollowRC
 A Python libary for general design of hollow reinforced concrete sections under combined actions packed into an easy to use executable.

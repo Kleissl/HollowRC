@@ -206,6 +206,8 @@ class Verify:  # consider renaming to DiskRC or similar
         # slope of cracks/concrete compression
         theta_0 = [initial_guess]  # initial guess of 45 degrees
         opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(theta_0))
+        opt.set_lower_bounds([0])  # the bounding speeds up the solver time
+        opt.set_upper_bounds([180])  # using [180 - 10**-12] significantly slows the solver
         opt.set_min_objective(lambda theta, grad: self.complementary_energy(self.cracked_equilibrium(theta[0])))
         opt.set_xtol_rel(1e-6)  # theta error tolerance
         theta = opt.optimize(theta_0)

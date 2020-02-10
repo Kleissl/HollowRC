@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1031</width>
-    <height>761</height>
+    <height>775</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_about">
          <attribute name="title">
@@ -200,7 +200,7 @@
               <item>
                <widget class="QLabel" name="label_24">
                 <property name="text">
-                 <string/>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/coordinates_and_sign_convention.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="pixmap">
                  <pixmap>:/Figures/resources/coordinates_and_sign_convention.PNG</pixmap>

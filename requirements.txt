@@ -11,7 +11,7 @@ numpy==1.16.4
 nlopt==2.6.1
 
 # for building executable
-PyInstaller==3.5
+PyInstaller==3.6
 
 # for calling Githib API
 requests==2.22.0

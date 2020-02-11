@@ -2,15 +2,13 @@
 """
 Class definition of a container for material properties
 
-History log:
-Version 0.1 - first working build
-
 Author: Kenneth C. Kleissl
 """
 
+
 class Results:
     """
-    A container for material properties by Kenneth C. Kleissl.
+    A container for results
 
     Attributes:
         ...
@@ -54,4 +52,3 @@ if __name__ == '__main__':
 
     Res = Results(0, 0, 0)
     print(Res)
-

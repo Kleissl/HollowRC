@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-This module containes all the analysis functions for HollowRC
+This module contains all the analysis functions for HollowRC
 
 Author: Kenneth C. Kleissl
 """
-
 # Standard library modules
 import math
 from timeit import default_timer as timer
+import random
 
 # Third-party library modules
 import numpy as np
@@ -41,7 +41,7 @@ def minCompEnergy(section, SF, Mat):
 
 
 @measure_time
-def ULS_analysis(section, SF, Mat):
+def ULS_analysis(section, SF, Mat, printing=True):
     """
     Perform a Plane Section ULS Analysis (incl. optimizing shear flow based on capacity)
     """
@@ -65,47 +65,62 @@ def ULS_analysis(section, SF, Mat):
     # get wall shear force capacity
     section.set_section_dist(dist)  # send the normal flow etc. all the way down to Wall level
     V_yield = section.get_wall_shear_capacities(Mat)
-    print('V_yield:', V_yield)
+    if printing:
+        print('V_yield:', V_yield)
 
     V_yield = [1e-10 if Vi < 1e-10 else Vi for Vi in V_yield]  # set near zeros to small values as solver needs a minimum of manouverbility
 
     # initial guess for wall shear forces     ( note: copysign(x,y) return x with the sign of y )
     x0 = [Vi_wall if abs(Vi_wall) <= V_yield[i] else math.copysign(V_yield[i], Vi_wall) for i, Vi_wall in enumerate(V_wall)]
+    # import random
+    # x0 = [random.random()*x for x in x0]
     # print('x0:', x0)
     x0 = np.append(x0, 1.0)  # append the shear load factor variable
 
     # Determine variable bounds
-    lower_bound = [-Vi for Vi in V_yield] + [1e-10]  # define lower bound by negated shear capacity + added shear load factor <--- why not just zero?
-    upper_bound = V_yield + [1.0]                  # define upper bound list by pos. yield shear flow + added shear load factor
+    lower_bounds = [-Vi for Vi in V_yield] + [1e-10]  # define lower bound by negated shear capacity + added shear load factor <--- why not just zero?
+    upper_bounds = V_yield + [1.0]                  # define upper bound list by pos. yield shear flow + added shear load factor
 
     # initiate optimization instance
-    opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))   # only LD_SLSQP support equality constraints
+    opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))  # only LD_SLSQP support equality constraints
+    # opt = nlopt.opt(nlopt.LD_MMA, len(x0))  # NLOPT_LD_MMA does only support inequality constraints
 
     # set bounds
-    opt.set_lower_bounds(lower_bound)
-    opt.set_upper_bounds(upper_bound)
+    opt.set_lower_bounds(lower_bounds)
+    opt.set_upper_bounds(upper_bounds)
 
     # set objective
-    opt.set_max_objective(myObjective)
+    opt.set_max_objective(myObjective)  # maximize load factor (last variable)
 
     # set constraint
     opt.add_equality_mconstraint(lambda result, x, grad: myShearConstraints2(result, x, grad, section, SF), [1e-6, 1e-6, 1e-6])  # feasible if func < tol
+    # opt.add_inequality_mconstraint(lambda result, x, grad: myShearConstraints2(result, x, grad, section, SF), [1e-6, 1e-6, 1e-6])
 
     # stop criterias / tolerances
     opt.set_xtol_rel(1e-10)  # with the problem now being smaller the tolerance can be stepped up -> did help finding the proper solution for some situations
-    opt.set_ftol_rel(1e-10)  # this alternative criteria allows the solver to escape when lambda factor need to go to zero
+    # opt.set_ftol_rel(1e-10)  # this alternative criteria allows the solver to escape when lambda factor need to go to zero
 
     # solve
     xopt = opt.optimize(x0)
-    V_wall = xopt[:-1]
 
-    # print result
-    print("wall based shear maximized load factor =", xopt[-1])
+    # multi-start search
+    while True:
+        x0 = [random.uniform(LB, UB) for LB, UB in zip(lower_bounds, upper_bounds)]  # random start within bounds
+        xopt2 = opt.optimize(x0)
+        enhancement = xopt2[-1] - xopt[-1]  # higher is better (load factor)
+        if enhancement > 1e-8:
+            xopt = xopt2
+        else:
+            break
+
+    *V_wall, load_fac = xopt  # unpack optimization results
+
+    if printing:
+        print("wall based shear maximized load factor =", load_fac)
     # print("shear final objective = ", opt.last_optimum_value())
     # print("wall based shear optimum at V_wall =", V_wall)
 
     shear_error = errorFunShear2(xopt, section, SF)
-    print("wall based shear error at opt =", shear_error)
     # print("shear result code = ", opt.last_optimize_result())
     if shear_error > 1e-6:
         print("Error too big!, shear optimization failed")
@@ -132,7 +147,8 @@ def ULS_analysis(section, SF, Mat):
         else:
             shear_UR = 1  # set shear_UR to 100% if wall has zero capacity
 
-        print('shear force in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall[i], abs(shear_UR) * 100))
+        if printing:
+            print('shear force in wall {} ({:.2f}kN) is at {:.2f}% utilization'.format(i + 1, V_wall[i], abs(shear_UR) * 100))
 
         # build H from scaled down H_yield
         j_start = i * wall.wallNodeN
@@ -163,7 +179,8 @@ def ULS_analysis(section, SF, Mat):
         # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
         #          str(xopt[-1])]
 
-    print('Integration test Vy, Vz, T: ', integrateShearFlow(H, dist, section))
+    if printing:
+        print('Integration test Vy, Vz, T: ', integrateShearFlow(H, dist, section))
 
     return Res, error_msg
 
@@ -172,13 +189,11 @@ def errorFunShear2(x, section, SF):
     """
     This function computes the shear equilibrium errors between wall forces and SF
     """
-    # unload variables
-    V = x[:-1]
-    load_fac = x[-1]
+    # unpack variables
+    *V, load_fac = x
 
     # integrate shear forces into sectional forces
     Vy, Vz, T = integrateWallShearForces(V, section)
-    print('wall based Integrated Vy, Vz, T: ', Vy, Vz, T)
 
     # Section force difference (sum squared diff.)
     return (SF.Vz*load_fac - Vz)**2 + (SF.Vy*load_fac - Vy)**2 + (SF.T*load_fac - T)**2
@@ -189,32 +204,31 @@ def myShearConstraints2(result, x, grad, section, SF):
     Constrain function for shear optimization
     for when the variables are wall shear forces
     """
-    # unload variables
-    V = x[:-1]
-    load_fac = x[-1]
+    # unpack variables
+    *V, load_fac = x
 
     # integrate wall shear forces into sectional forces
     Vy, Vz, T = integrateWallShearForces(V, section)
 
     # Section force difference
-    result[0] = SF.Vy * load_fac - Vy
-    result[1] = SF.Vz * load_fac - Vz
-    result[2] = SF.T * load_fac - T
+    result[0] = Vy - SF.Vy * load_fac  # horizontal equilibirum
+    result[1] = Vz - SF.Vz * load_fac  # vertical equilibirum
+    result[2] = T - SF.T * load_fac    # torsional equilibrium
 
     # check if gradients are requested
     if grad.size > 0:
 
-        e = section.get_e()  # get wall eccentricity from GC
+        e = section.get_e()  # get wall eccentricity from GC (it's in mm!)
         for i, wall in enumerate(section.walls):
-            # gradients
-            grad[0, i] = math.cos(wall.angle)  # the term is here positive as the minus from the constraint function counters the original minus
-            grad[1, i] = math.sin(wall.angle)  # positive up
-            grad[2, i] = - e[i] / 1000
+            # gradients from wall shear forces
+            grad[0, i] = -math.cos(wall.angle)  # negative, as positive shear is defined opposite wall direction
+            grad[1, i] = -math.sin(wall.angle)  # negative, as positive shear is defined opposite wall direction
+            grad[2, i] = e[i] / 1000            # positive, as both wall shear force and torsion is positive counter-clockwise
 
-        # load factor gradient
-        grad[0, -1] = SF.Vy
-        grad[1, -1] = SF.Vz
-        grad[2, -1] = SF.T
+        # gradient from load factor
+        grad[0, -1] = -SF.Vy  # all negative because the load factor is in a negative term of the objective
+        grad[1, -1] = -SF.Vz
+        grad[2, -1] = -SF.T
 
         # # check gradient matrix by finite-difference
         # grad2 = finite_difference2(x, section, SF)
@@ -235,8 +249,10 @@ def finite_difference2(x, section, SF):
     grad = np.empty(shape=(3, len(x)))  # initiate gradient matrix
     delta = 0.1
     for i in range(len(x)):
-        result1 = constrain_function2(x + delta, section, SF)
-        result2 = constrain_function2(x - delta, section, SF)
+        x_delta = np.zeros_like(x)
+        x_delta[i] = x_delta[i] + delta
+        result1 = constrain_function2(x + x_delta, section, SF)
+        result2 = constrain_function2(x - x_delta, section, SF)
         grad[0, i] = (result1[0] - result2[0]) / (2 * delta)
         grad[1, i] = (result1[1] - result2[1]) / (2 * delta)
         grad[2, i] = (result1[2] - result2[2]) / (2 * delta)
@@ -244,9 +260,8 @@ def finite_difference2(x, section, SF):
 
 
 def constrain_function2(x, section, SF):  # constrain function to be used with finite-difference
-    # unload variables
-    V = x[:-1]
-    load_fac = x[-1]
+    # unpack variables
+    *V, load_fac = x
 
     # integrate shear flow into sectional forces
     Vy, Vz, T = integrateWallShearForces(V, section)
@@ -309,7 +324,7 @@ def integrateWallShearForces(V, section):
     return sum(Vy), sum(Vz), sum(T)
 
 
-def myObjective(x, grad):  # objective function defining last variable as the objevtive
+def myObjective(x, grad):  # objective function defining last variable as the objective
     if grad.size > 0:
         grad[:] = [0]*len(grad)
         grad[-1] = 1
@@ -451,7 +466,6 @@ def uncracked_strain_state(section, SF, Mat):
     eps_tens = max(eps)  # strain in extreme tension fiber
 
     x0 = np.array([NA_angle, eps_comp, eps_tens])  # initial guess
-    print('Initial strain guess =', x0)
     return x0
 
 
@@ -476,20 +490,18 @@ def shear_flow(dist, dist2, SF, section, dx):
 
 
 def bendingSolution(x0, section, SF, Mat):
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(x0))
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(x0))  # faster than LN_SBPLX
     opt.set_min_objective(lambda x, grad: errorFunBending(x, section, SF, Mat))
     opt.set_xtol_rel(1e-8)
-    x = opt.optimize(x0)
-    print("Optimized strain state =", x)
-    print("Minimized error value = ", opt.last_optimum_value())
+    x = opt.optimize(x0)  # Optimized strain state
     # print("result code = ", opt.last_optimize_result())
 
     # check result for high error margin
-    if opt.last_optimum_value() > 1e-4:
+    if opt.last_optimum_value() > 1e-6:
         print("Failed to find bending equilibrium, try with less load")
         raise MyOptimizerError("Failed to find bending equilibrium", "The section cannot sustain the bending loads applied. Try with less load.")
 
-        # If bending equilibrium fails -> capacity is insufficient -> intro. 
+        # If bending equilibrium fails -> capacity is insufficient -> intro.
         # load factor and minimize it under error constraint -> yields a UR / lambda_bending factor
         # ------- need to implement gradients for optimization below ------
         # print("Error too big!, steps over to bigger problem including load factor")
@@ -684,7 +696,7 @@ def ReinforcementStressAry(eps, Mat):
 #     if 1 - xopt[-1] < 1e-10: # sufficiently close (within tolorance) to be considered as one
 #         error_msg = None
 #     else:
-#         error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]), 
+#         error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]),
 #                      "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
 #         # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
 #         #          str(xopt[-1])]

@@ -1,11 +1,20 @@
+rmdir /s /q .\dist\HollowRC
+rmdir /s /q .\build
+rmdir /s /q .\HollowRC\__pycache__
+del .\HollowRC.spec
+
 :: call activate build_env2
-pyinstaller main.py --upx-dir=%~dp0..\upx-3.95-win64 --name=HollowRC --icon=icon.ico --onedir --paths "C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x86"
+pyinstaller ./HollowRC/main.py ^
+    --onedir --name=HollowRC ^
+    --icon=./HollowRC/resources/icon.ico ^
+    --upx-dir=%~dp0..\upx-3.95-win64 ^
+    --upx-exclude=vcruntime140.dll ^
+    --upx-exclude=msvcp140.dll ^
+    --upx-exclude=qwindows.dll ^
+    --upx-exclude=qwindowsvistastyle.dll ^
+    --paths=%~dp0\HollowRC
 :: call deactivate
-xcopy .\dist\no_upx_files\VCRUNTIME140.dll .\dist\HollowRC\
-xcopy .\dist\no_upx_files\MSVCP140.dll .\dist\HollowRC\
-xcopy .\dist\no_upx_files\qwindows.dll .\dist\HollowRC\PySide2\plugins\platforms\
-xcopy .\dist\no_upx_files\qwindowsvistastyle.dll .\dist\HollowRC\PySide2\plugins\styles\
-pause
+
 del .\dist\HollowRC\Qt5WebSockets.dll
 del .\dist\HollowRC\_decimal.pyd
 del .\dist\HollowRC\_lzma.pyd
@@ -21,7 +30,7 @@ del .\dist\HollowRC\libblkdta*
 del .\dist\HollowRC\libchkder*
 del .\dist\HollowRC\libcobyla2*
 del .\dist\HollowRC\libd_odr*
-del .\dist\HollowRC\libdcosqb*
+::del .\dist\HollowRC\libdcosqb*
 del .\dist\HollowRC\libdcsrch*
 del .\dist\HollowRC\libdet*
 del .\dist\HollowRC\libdfft_sub*
@@ -51,10 +60,24 @@ rmdir /s /q .\dist\HollowRC\scipy
 rmdir /s /q .\dist\HollowRC\lib2to3
 rmdir /s /q .\dist\HollowRC\Include
 rmdir /s /q .\dist\HollowRC\PySide2\translations
-rmdir /s /q .\dist\HollowRC\PySide2\PySide2
-del .\dist\HollowRC\PySide2\libEGL.dll
-del .\dist\HollowRC\PySide2\d3dcompiler_47.dll
-del .\dist\HollowRC\PySide2\libGLESv2.dll
-del .\dist\HollowRC\PySide2\opengl32sw.dll
+::rmdir /s /q .\dist\HollowRC\PySide2\PySide2
+::del .\dist\HollowRC\PySide2\libEGL.dll
+del .\dist\HollowRC\libEGL.dll
+::del .\dist\HollowRC\PySide2\d3dcompiler_47.dll
+del .\dist\HollowRC\d3dcompiler_47.dll
+::del .\dist\HollowRC\PySide2\libGLESv2.dll
+::del .\dist\HollowRC\PySide2\opengl32sw.dll
+del .\dist\HollowRC\opengl32sw.dll
 del .\dist\HollowRC\PySide2\QtNetwork.pyd
-pause
+del .\dist\HollowRC\_multiprocessing.pyd
+del .\dist\HollowRC\_hashlib.pyd
+del .\dist\HollowRC\_bz2.pyd
+del .\dist\HollowRC\PySide2\qt.conf
+del .\dist\HollowRC\PySide2\plugins\platforms\qminimal.dll
+del .\dist\HollowRC\PySide2\plugins\platforms\qoffscreen.dll
+del .\dist\HollowRC\PySide2\plugins\platforms\qwebgl.dll
+del .\dist\HollowRC\libopenblas.PYQHXLVVQ7VESDPUVUADXEVJOBGHJPAY.gfortran-win_amd64.dll
+rmdir /s /q .\dist\HollowRC\PySide2\plugins\imageformats
+rmdir /s /q .\dist\HollowRC\PySide2\plugins\iconengines
+rmdir /s /q .\dist\HollowRC\PySide2\plugins\bearer
+rmdir /s /q .\dist\HollowRC\importlib_metadata-0.23-py3.7.egg-info

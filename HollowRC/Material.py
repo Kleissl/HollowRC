@@ -6,6 +6,7 @@ Author: Kenneth C. Kleissl
 """
 import nlopt
 
+
 class MatProp:
     """
     A container for material properties
@@ -26,10 +27,25 @@ class MatProp:
     gamma_s = 1.15
     conc_method = 'EN Parabolic-rectangular'
     reinf_method = 'Elastic-plastic'
-    conc_method_options = ['EN Parabolic-rectangular', 'EN Bi-linear', 'EN Nonlinear', 'Linear elastic', 'Linear elastic (no ten.)', 'Elastic-plastic', 'Sudden plastic']
-    reinf_method_options = ['Elastic-plastic', 'Bi-linear hardening', 'Linear elastic', 'Elastic-plastic (no comp.)']
+    conc_method_options = ['EN Parabolic-rectangular',
+                           'EN Bi-linear',
+                           'EN Nonlinear',
+                           'Linear elastic',
+                           'Linear elastic (no ten.)',
+                           'Elastic-plastic',
+                           'Sudden plastic']
+    reinf_method_options = ['Elastic-plastic',
+                            'Bi-linear hardening',
+                            'Linear elastic',
+                            'Elastic-plastic (no comp.)']
+
     # hidden values
     f_ct = 2.5
+
+    def __repr__(self):
+        return f'MatProp(f_ck={self.f_ck}, E_cm={self.E_cm}, f_yk={self.f_yk}, E_s={self.E_s}, ' + \
+               f'alpha_cc={self.alpha_cc}, gamma_c={self.gamma_c}, gamma_s={self.gamma_s}, ' + \
+               f'conc_method={self.conc_method}, reinf_method={self.reinf_method})'
 
     def __init__(self):
         # Instance variables

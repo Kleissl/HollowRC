@@ -2,11 +2,9 @@
 """
 Class definitions for geometry properties
 
-History log:
-Version 0.1 - first working build
-
 Author: Kenneth C. Kleissl
 """
+# imports
 import math
 import numpy as np
 import Verification
@@ -30,14 +28,23 @@ class CrossSection:
     def get_instance_count(cls):
         return cls.instance_count
 
-    def __init__(self):
-        # Instance variables
-        self.walls = []  # list of wall instances
+    def __init__(self, *args):
+        # Initiate list of wall instances
+        self.walls = []
 
-        # Class variables
+        # deal with arguments
+        for arg in args:
+            if isinstance(arg, list):
+                self.walls.extend(arg)
+            else:
+                self.walls.append(arg)
 
         # Class methods
         self.count_instances()
+
+    def __repr__(self):
+        string = ",\n             ".join([str(x) for x in self.walls])
+        return f'CrossSection({string})'
 
     def add_wall(self, wall):
         self.walls.append(wall)
@@ -104,7 +111,7 @@ class CrossSection:
         for wall in self.walls:
             angles.append(wall.angle)
         if local_data:
-            return np.repeat(angles, self.walls[0].wallNodeN) # presumes same wallNodeN for all walls
+            return np.repeat(angles, self.walls[0].wallNodeN)  # presumes same wallNodeN for all walls
         else:
             return angles
 
@@ -166,15 +173,15 @@ class CrossSection:
         return True, None
 
     def set_section_dist(self, dist):
-        for i,wall in enumerate(self.walls):  # looping over walls
-            N = wall.wallNodeN # nodes per wall
+        for i, wall in enumerate(self.walls):  # looping over walls
+            N = wall.wallNodeN  # nodes per wall
             wall_dist = {}
             for key in dist:
                 wall_dist[key] = dist[key][i*N:(i+1)*N]
             wall.set_wall_dist(wall_dist)
 
     def get_wall_shear_capacities(self, Mat):
-        # returns a list of wall yield shear forces 
+        # returns a list of wall yield shear forces
         return [wall.get_yield_shear_force(Mat) for wall in self.walls]
 
     def get_area(self):
@@ -183,7 +190,7 @@ class CrossSection:
         '''
         area = []
         for wall in self.walls:
-            area.append( wall.area )            
+            area.append(wall.area)
         return sum(area)
 
     def get_Ix_Iy(self):
@@ -197,11 +204,11 @@ class CrossSection:
         centreX, centreY = self.get_centre()
 
         for wall in self.walls:
-            Ix.append( wall.get_Ix() + wall.area*(wall.midY - centreY)**2 )
-            Iy.append( wall.get_Iy() + wall.area*(wall.midX - centreX)**2 )
-            
+            Ix.append(wall.get_Ix() + wall.area*(wall.midY - centreY)**2)
+            Iy.append(wall.get_Iy() + wall.area*(wall.midX - centreX)**2)
+
         # print('Ix:', Ix)
-        # print('Iy:', Iy)            
+        # print('Iy:', Iy)
         # Sum wall contributions
         return sum(Ix), sum(Iy)
 
@@ -256,24 +263,24 @@ class Wall:
 
     def set_wallNodeN(self, wallNodeN):
         self.wallNodeN = wallNodeN
-        self.ds = self.length / (self.wallNodeN - 1) # recalculate ds
+        self.ds = self.length / (self.wallNodeN - 1)  # recalculate ds
 
-    def __str__(self):
-        return "member of Wall"
+    def __repr__(self):
+        return f'Wall(X={self.X}, Y={self.Y}, thick={self.thick}, rho_long={self.rho_long}, rho_trans={self.rho_trans})'
 
     def set_wall_dist(self, dist):
         self.dist = dist
 
     def get_yield_shear_force(self, Mat):
         H_yield = self.get_yield_flow(Mat)
-        V_yield = self.integrate_dist(H_yield) / 1000 # dividing by 1000 to get force in [kN]
+        V_yield = self.integrate_dist(H_yield) / 1000  # dividing by 1000 to get force in [kN]
         return V_yield
 
     def get_yield_flow(self, Mat):
         H_yield = []
 
         for N_flow in self.dist['normal_flow']:  # looping over wall data points
-            sigma_x = N_flow / self.thick #
+            sigma_x = N_flow / self.thick
             stress = [sigma_x, 0, 0]
             verification = Verification.Verify(stress, Mat, self.rho_long, self.rho_trans)
             H_yield.append(verification.tau_yielding() * self.thick)
@@ -307,6 +314,7 @@ class Wall:
         else:
             Iy = 0
         return Iy
+
 
 # For when this script is excetuted on its own
 if __name__ == '__main__':

@@ -2,15 +2,13 @@
 """
 Class definition of a container for sectional forces
 
-History log:
-Version 0.1 - first working build
-
 Author: Kenneth C. Kleissl
 """
 
+
 class SectionForces:
     """
-    A container for sectional forces by Kenneth C. Kleissl.
+    A container for sectional forces
 
     Attributes:
         N:  Normal force (neg. = compression)
@@ -52,10 +50,8 @@ class SectionForces:
     def set_load_factor(self, fac):
         self.load_factor = fac
 
-    def print_str(self):
-        string = 'N=' + str(self.N) + ', My=' + str(self.My) + ', Mz=' + str(self.Mz) \
-                 + ', Vy=' + str(self.Vy) + ', Vz=' + str(self.Vz) + ', T=' + str(self.T)
-        return string
+    def __repr__(self):
+        return f'SectionForces(N={self.N}, My={self.My}, Mz={self.Mz}, Vy={self.Vy}, Vz={self.Vz}, T={self.T})'
 
 
 # For when this script is excetuted on its own
@@ -68,4 +64,3 @@ if __name__ == '__main__':
     T = 0
     SF = SectionForces(N, My, Mz, Vy, Vz, T)
     print(SF.My)
-

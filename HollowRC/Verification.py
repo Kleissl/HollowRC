@@ -207,7 +207,7 @@ class Verify:  # consider renaming to DiskRC or similar
         theta_0 = [initial_guess]  # initial guess of 45 degrees
         opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(theta_0))
         opt.set_lower_bounds([0])  # the bounding speeds up the solver time
-        opt.set_upper_bounds([180])  # using [180 - 10**-12] significantly slows the solver
+        opt.set_upper_bounds([180])  # using [180 - 10**-12] significantly slows the solver  <- 90?
         opt.set_min_objective(lambda theta, grad: self.complementary_energy(self.cracked_equilibrium(theta[0])))
         opt.set_xtol_rel(1e-6)  # theta error tolerance
         theta = opt.optimize(theta_0)
@@ -318,7 +318,7 @@ class Verify:  # consider renaming to DiskRC or similar
         # Calculate complementary elastic energy (under linear elastic assumption!)
         W_ec = 10**6 * 1 / (2 * E_c) * stresses['sigma_c']**2 * (1 - self.rho_c_eq)
         W_es = 10**6 * self.rho_sx / (2 * E_s) * stresses['sigma_sx']**2 + \
-               10**6 * self.rho_sy / (2 * E_s) * stresses['sigma_sy']**2
+            10**6 * self.rho_sy / (2 * E_s) * stresses['sigma_sy']**2
         W_e = W_ec + W_es
         return W_e  # [Nmm/mm] energy/thickness
 

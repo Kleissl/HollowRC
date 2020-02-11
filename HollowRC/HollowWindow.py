@@ -33,7 +33,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # self.geometry_table = TableInterface.MyTable(self.geometry_table)
 
         # version tag and label
-        self.tag = 'v1.4'
+        self.tag = 'v1.5'
         self.label_version.setText(self.tag)
 
         # --- Triggers ---
@@ -151,10 +151,10 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.material_plot()
         elif self.tabWidget.currentIndex() == 3:
             # update result plot
-            try:
-                self.result_plot(self.Res)
-            except:
-                pass
+            # try:
+            self.result_plot(self.Res)
+            # except:
+            #     pass
 
     def save_file(self):
         '''
@@ -266,8 +266,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.refresh_visible_plots()
             return
 
-        # print(Geometry)
-        print('SF: ' + SF.print_str())
+        print(section)
+        print(Mat)
+        print(SF)
 
         # switch to Loading & Result tab
         self.tabWidget.setCurrentIndex(3)

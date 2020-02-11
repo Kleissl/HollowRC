@@ -29,17 +29,17 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         # view.scene().disconnect()
         # view.close()
 
-    def update_section(self, signal_value): # signal receiver
+    def update_section(self, signal_value):  # signal receiver
         dx, dy, wall_id = signal_value
         X = self.section.get_X()
         Y = self.section.get_Y()
         X[wall_id] += dx
         Y[wall_id] -= dy
-        self.section.set_XY(X, Y)               # update current section instance with the new coordinates
-        self.new_section.emit(self.section)     # emit new_section signal for the window class to catch
-        self.scene_backup = self.scene          # store a copy of the scene to avoid RuntimeError: Internal C++ object (MyEllipse) already deleted.
-        self.scene = QtWidgets.QGraphicsScene() # creates a new scene instance
-        self.setScene(self.scene)               # set the created scene
+        self.section.set_XY(X, Y)                # update current section instance with the new coordinates
+        self.new_section.emit(self.section)      # emit new_section signal for the window class to catch
+        self.scene_backup = self.scene           # store a copy of the scene to avoid RuntimeError: Internal C++ object (MyEllipse) already deleted.
+        self.scene = QtWidgets.QGraphicsScene()  # creates a new scene instance
+        self.setScene(self.scene)                # set the created scene
         self.plot_all(self.section)
 
     def plot_all(self, section):
@@ -47,16 +47,12 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         self.section = section
         self.clear_scene()
 
-        try:
-            # unpack geometry properties
-            X = self.section.get_X()
-            Y = self.section.get_Y()
-            T = self.section.get_thick()
-            centreX, centreY = self.section.get_centre()
-            wallAngles = self.section.get_angles()
-        except:
-            print('Cannot read geometry')
-            return
+        # unpack geometry properties
+        X = self.section.get_X()
+        Y = self.section.get_Y()
+        T = self.section.get_thick()
+        centreX, centreY = self.section.get_centre()
+        wallAngles = self.section.get_angles()
 
         # connect itemChange signal with method
         # scene.changed.connect(self.node_moved)
@@ -149,7 +145,7 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         # plot centre lines
         for line in centre_lines:
             self.scene.addLine(line, bold_pencil)
-        
+
         # plot node circles
         for circle in node_circles:
             self.scene.addItem(circle)
@@ -171,12 +167,12 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         self.scene.mousePressEvent = self.scene_mousePressEvent  # overrule QGraphicsSceneEvent
         # unblock scene change signals again
         # scene.blockSignals(False)
-        
-    def scene_mousePressEvent(self, event): # when user clicks on result the values are listed in the status line
-        if self.awaits_click == True:
+
+    def scene_mousePressEvent(self, event):  # when user clicks on result the values are listed in the status line
+        if self.awaits_click:
             x = event.scenePos().x()
             y = event.scenePos().y()
-            self.scene_clicked.emit({'x': round(x), 'y' : round(y)})  # emit scene_clicked signal
+            self.scene_clicked.emit({'x': round(x), 'y': round(y)})  # emit scene_clicked signal
         return QtWidgets.QGraphicsScene.mousePressEvent(self.scene, event)
 
 
@@ -207,12 +203,12 @@ class MyEllipse(QtWidgets.QGraphicsEllipseItem, QtCore.QObject):
         self.wall_id = wall_id
 
     # def itemChange(self, change, value):
-            # """
-            # Catch all item position changes and emit the changed signal with the value (which will be the position).
-            # :param change:
-            # :param value:
-            # """
-    #     if change == QtWidgets.QGraphicsItem.ItemPositionChange: 
+    # """
+    # Catch all item position changes and emit the changed signal with the value (which will be the position).
+    # :param change:
+    # :param value:
+    # """
+    #     if change == QtWidgets.QGraphicsItem.ItemPositionChange:
     #         # value is the new position.
     #         print("item's scene position changed: ", value)
     #         # print(value)
@@ -220,8 +216,8 @@ class MyEllipse(QtWidgets.QGraphicsEllipseItem, QtCore.QObject):
     #     return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
     def mousePressEvent(self, event):
-    #     super().mousePressEvent(event)
-        self.setCursor(QtCore.Qt.ClosedHandCursor) # update cursor
+        # super().mousePressEvent(event)
+        self.setCursor(QtCore.Qt.ClosedHandCursor)  # update cursor
         self.x0 = event.scenePos().x()
         self.y0 = event.scenePos().y()
         return QtWidgets.QGraphicsEllipseItem.mousePressEvent(self, event)
@@ -262,7 +258,7 @@ class MyResultView(QtWidgets.QGraphicsView):
         # self.update()
         # self.scene.update()
 
-    def show_result_values(self, signal_value): # signal receiver
+    def show_result_values(self, signal_value):  # signal receiver
         pass
 
     def set_check_boxes(self, checkbox_list):
@@ -271,11 +267,11 @@ class MyResultView(QtWidgets.QGraphicsView):
     def plot_all(self, Res):
         # original way of plotting all
         self.clear_scene()
- 
+
         # check for empty result
         if not Res:
             return
-        
+
         # unpack results dictionary
         x = Res.x
         y = Res.y
@@ -310,12 +306,12 @@ class MyResultView(QtWidgets.QGraphicsView):
         # calculate largest dimension of cross-section
         section_dim = max(max(y) - min(y), max(x) - min(x))
 
-        for j in range(Res.plot_count): # looping over the different result distributions
+        for j in range(Res.plot_count):  # looping over the different result distributions
             # select styles
-            pencil = QtGui.QPen(colour_list[j]) # create pen with next colour
-            fill = QtGui.QBrush(colour_list[j]) # create brush with same colour
+            pencil = QtGui.QPen(colour_list[j])  # create pen with next colour
+            fill = QtGui.QBrush(colour_list[j])  # create brush with same colour
             pencil.setWidth(10)
-            
+
             check_box = self.check_boxes[j]
             # check_box = getattr(self, 'checkBox_plot' + str(j+1))
 
@@ -328,14 +324,14 @@ class MyResultView(QtWidgets.QGraphicsView):
             # plot if checked
             if check_box.isChecked():
                 scale = Res.plot_scale[j] * section_dim / max(1e-12, max(abs(Res.plot_data[j])))
-                rect = QtGui.QPolygonF() # outline polygon
+                rect = QtGui.QPolygonF()  # outline polygon
                 for i in range(len(Res.x)):
                     PX = Res.x[i] + scale * Res.plot_data[j][i] * math.sin(-wallAngles[i])
                     PY = Res.y[i] + scale * Res.plot_data[j][i] * math.cos(-wallAngles[i])
                     if Res.x[i] == Res.x[i - 1] and Res.y[i] == Res.y[i - 1]:  # new wall element started
                         rect.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
                         # prepare/plot shading
-                        if i>0:
+                        if i > 0:
                             # plot shading
                             rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
                             poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
@@ -344,7 +340,7 @@ class MyResultView(QtWidgets.QGraphicsView):
                             self.scene.addItem(poly_item)
                             # self.scene.addPolygon(rect2, brush=fill)
 
-                        rect2 = QtGui.QPolygonF() # shading polygon
+                        rect2 = QtGui.QPolygonF()  # shading polygon
                         rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
                         rect2.append(QtCore.QPointF(PX, -PY))
                     else:
@@ -357,7 +353,7 @@ class MyResultView(QtWidgets.QGraphicsView):
                     # line_item = QtWidgets.QGraphicsLineItem(line)
                     line_item = myLine(line)
                     line_item.setPen(pencil)
-                    line_item.set_data_str('{}: {:.2f} {}'.format(Res.plot_names[j], Res.plot_data[j][i], Res.plot_units[j])) # string for click ev.
+                    line_item.set_data_str('{}: {:.2f} {}'.format(Res.plot_names[j], Res.plot_data[j][i], Res.plot_units[j]))  # string for click ev.
                     line_item.setAcceptHoverEvents(True)
                     self.scene.addItem(line_item)
 
@@ -381,7 +377,7 @@ class MyResultView(QtWidgets.QGraphicsView):
         # ui->graphicsView->fitInView(_scene->itemsBoundingRect(),Qt::KeepAspectRatio);   # consider changing to itemsBoundingRect when sceneRect not updating!!
         self.scene.mousePressEvent = self.scene_mousePressEvent  # overrule QGraphicsSceneEvent
 
-    def scene_mousePressEvent(self, event): # when user clicks on result the values are listed in the status line
+    def scene_mousePressEvent(self, event):  # when user clicks on result the values are listed in the status line
         # x = event.scenePos().x()
         # y = event.scenePos().y()
         # print('scene press event (x,y) = ({}, {})'.format(x, y))
@@ -402,6 +398,8 @@ class MyResultView(QtWidgets.QGraphicsView):
 
 # # # Creating my own line item class so I can overwrite its mousePressEvent
 # # line_item = QtWidgets.QGraphicsLineItem(line)
+
+
 class myLine(QtWidgets.QGraphicsLineItem):
     # def __init__(self, parent=None):
     #     # QtWidgets.QGraphicsScene.__init__(self, parent)
@@ -421,7 +419,7 @@ class myLine(QtWidgets.QGraphicsLineItem):
         pen.setWidth(20)
         self.setPen(pen)
         return QtWidgets.QGraphicsLineItem.hoverEnterEvent(self, event)
-    
+
     def hoverLeaveEvent(self, event):
         # print('hoverLeaveEvent')
         pen = self.pen()

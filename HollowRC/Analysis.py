@@ -72,14 +72,11 @@ def ULS_analysis(section, SF, Mat, printing=True):
 
     # initial guess for wall shear forces     ( note: copysign(x,y) return x with the sign of y )
     x0 = [Vi_wall if abs(Vi_wall) <= V_yield[i] else math.copysign(V_yield[i], Vi_wall) for i, Vi_wall in enumerate(V_wall)]
-    # import random
-    # x0 = [random.random()*x for x in x0]
-    # print('x0:', x0)
     x0 = np.append(x0, 1.0)  # append the shear load factor variable
 
     # Determine variable bounds
     lower_bounds = [-Vi for Vi in V_yield] + [1e-10]  # define lower bound by negated shear capacity + added shear load factor <--- why not just zero?
-    upper_bounds = V_yield + [1.0]                  # define upper bound list by pos. yield shear flow + added shear load factor
+    upper_bounds = V_yield + [1.0]                    # define upper bound list by pos. yield shear flow + added shear load factor
 
     # initiate optimization instance
     opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))  # only LD_SLSQP support equality constraints

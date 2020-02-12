@@ -169,10 +169,10 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         # scene.blockSignals(False)
 
     def scene_mousePressEvent(self, event):  # when user clicks on result the values are listed in the status line
-        if self.awaits_click:
-            x = event.scenePos().x()
-            y = event.scenePos().y()
-            self.scene_clicked.emit({'x': round(x), 'y': round(y)})  # emit scene_clicked signal
+        # include custom signal containing coordinates
+        x = event.scenePos().x()
+        y = event.scenePos().y()
+        self.scene_clicked.emit({'x': round(x), 'y': round(y)})  # emit scene_clicked signal
         return QtWidgets.QGraphicsScene.mousePressEvent(self.scene, event)
 
 

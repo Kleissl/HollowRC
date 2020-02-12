@@ -20,7 +20,7 @@ import Material
 import Geometry
 import pickle
 import Plots
-# import TableInterface
+from TableInterface import MyTable
 
 
 class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
@@ -30,7 +30,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
     def __init__(self):
         super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
         self.setupUi(self)  # setup layout and widgets defined in Qt Designer
-        # self.geometry_table = TableInterface.MyTable(self.geometry_table)
 
         # version tag and label
         self.tag = 'v1.5'
@@ -42,28 +41,26 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.saveAct.triggered.connect(self.save_file)
         self.openAct.triggered.connect(self.load_file)
         self.analyseAct.triggered.connect(self.initiate_analysis)
-        self.addRowButton.clicked.connect(self.add_row)
-        self.removeRowButton.clicked.connect(self.remove_row)
-        self.moveUpRowButton.clicked.connect(self.move_row_up)
-        self.moveDownRowButton.clicked.connect(self.move_row_down)
+        self.addRowButton.clicked.connect(self.geometry_table.add_row)
+        self.removeRowButton.clicked.connect(self.geometry_table.remove_row)
+        self.moveUpRowButton.clicked.connect(self.geometry_table.move_row_up)
+        self.moveDownRowButton.clicked.connect(self.geometry_table.move_row_down)
         # self.pushButton_calcSLS.clicked.connect(self.calculateSLS)
         # self.pushButton_calcULS.clicked.connect(self.calculateULS)
         self.Res = None
 
         # --- Signals ---
         # update geometry plot if table item changes
-        self.geometry_table.itemChanged.connect(
-            self.geometry_plot)
+        self.geometry_table.itemChanged.connect(self.geometry_plot)
         # call set_geometry method if a new_section signal is received
-        self.graphicsViewGeometry.new_section.connect(
-            self.set_geometry)
+        self.graphicsViewGeometry.new_section.connect(self.set_geometry)
 
-        self.graphicsViewGeometry.scene_clicked.connect(
-            self.node_coords_by_click)
+        self.graphicsViewGeometry.scene_clicked.connect(self.geometry_table.node_coords_by_click)
 
         # connect the status_str signal with the update_statusline method
-        self.graphicsViewResults.status_str.connect(
-            self.update_statusline)
+        self.graphicsViewResults.status_str.connect(self.update_statusline)
+        self.geometry_table.status_msg.connect(self.update_statusline)
+        self.geometry_table.error_msg.connect(self.show_msg_box)
 
         # self.graphicsViewGeometry.itemChanged.connect(self.node_moved)
         self.tabWidget.currentChanged.connect(self.tab_changed)
@@ -327,96 +324,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def node_coords_by_click(self, signal_value):
-        x = signal_value['x']
-        y = signal_value['y']
-        self.graphicsViewGeometry.awaits_click = False  # stop more click signals from being send
-        table = self.geometry_table
-        table.blockSignals(True)           # block signals
-        row_index = table.rowCount() - 1   # get index of last row
-        x_item = table.item(row_index, 0)  # Retrieve item from the cell
-        x_item.setText(str(x))             # Replace bad item content
-        y_item = table.item(row_index, 1)
-        table.blockSignals(False)          # activate signals before last change to trigger update
-        y_item.setText(str(-y))            # Replace bad item content
-
-    def add_row(self):
-        self.geometry_table.blockSignals(True)
-        row_count = self.geometry_table.rowCount()         # get number of rows
-        self.geometry_table.insertRow(row_count)           # insert new row at the end
-        # insert items
-        col_count = self.geometry_table.columnCount()      # get number of columns
-        for col in range(2):  # loop over columns
-            item = QtWidgets.QTableWidgetItem('click')
-            item.setToolTip('Click on geometry plot to load coordinates')
-            self.geometry_table.setItem(row_count, col, item)  # set item to row below
-        # copy values from previous row
-        row_values = self.get_table_row(self.geometry_table, row_count - 1)
-        for col in range(2, col_count):  # loop over non-coordinates columns
-            value = row_values[col]
-            item = QtWidgets.QTableWidgetItem('{:.6g}'.format(value))
-            self.geometry_table.setItem(row_count, col, item)  # set item to row below
-        self.statusbar.showMessage(
-            'Recent action: row added - ' +
-            'Click on geometry plot scene to load coordinates into the newly added row')
-        self.geometry_table.blockSignals(False)
-        self.graphicsViewGeometry.awaits_click = True  # will allow for scene_clicked signals
-
-    def remove_row(self):
-        self.geometry_table.blockSignals(True)
-        select_row = self.geometry_table.currentRow()  # get selected row
-        if select_row == -1:
-            self.statusbar.showMessage('Error: no row selected')
-            return
-        self.geometry_table.removeRow(select_row)  # remove current row
-        self.statusbar.showMessage('Recent action: row removed')
-        self.geometry_table.blockSignals(False)
-        self.geometry_plot()
-
-    def move_row_up(self):
-        self.geometry_table.blockSignals(True)
-        select_row = self.geometry_table.currentRow()  # get selected row
-        if select_row == 0:
-            self.statusbar.showMessage('Error: cannot move first row up')
-            return
-        elif select_row == -1:
-            self.statusbar.showMessage('Error: no row selected')
-            return
-        self.geometry_table.insertRow(select_row + 1)  # insert new row below selected row
-        col_count = self.geometry_table.columnCount()  # get number of columns
-
-        for col in range(col_count):                                # loop over columns
-            moving_item = self.geometry_table.takeItem(select_row - 1, col)  # take item from row above
-            self.geometry_table.setItem(select_row + 1, col, moving_item)    # set item to row below
-
-        self.geometry_table.removeRow(select_row - 1)      # remove original row
-        self.statusbar.showMessage('Recent action: row moved up')
-        self.geometry_table.blockSignals(False)
-        self.geometry_plot()
-
-    def move_row_down(self):
-        self.geometry_table.blockSignals(True)
-        select_row = self.geometry_table.currentRow()      # get selected row
-        row_count = self.geometry_table.rowCount()         # get number of rows
-        if select_row == row_count - 1:                             # check if last row
-            self.statusbar.showMessage('Error: cannot move last row down')
-            return
-        elif select_row == -1:
-            self.statusbar.showMessage('Error: no row selected')
-            return
-        self.geometry_table.insertRow(select_row)          # insert new row above selected row
-        select_row = select_row + 1
-        col_count = self.geometry_table.columnCount()      # get number of columns
-
-        for col in range(col_count):                                # loop over columns
-            moving_item = self.geometry_table.takeItem(select_row + 1, col)  # take item from row below
-            self.geometry_table.setItem(select_row - 1, col, moving_item)    # set item to row above
-
-        self.geometry_table.removeRow(select_row + 1)      # remove original row
-        self.statusbar.showMessage('Recent action: row moved down')
-        self.geometry_table.blockSignals(False)
-        self.geometry_plot()
-
     def material_changed(self, signal_value):
         '''
         This method is executed when the material inputs are changed.
@@ -453,7 +360,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                     raise ValueError
                 # setattr(Mat, string, value)  # Send input value to class
             except Exception as e:
-                self.show_msg_box(['Material input error', 'Input value "{}" for {} is not valid. {} returned to default value.'.format(obj.text(), string, string)])
+                self.show_msg_box(['Material input error',
+                                   f'Input value "{obj.text()}" for {string} is not valid. {string} returned to default value.'])
                 Mat = Material.MatProp()
                 value = getattr(Mat, string)  # Get default value from material class
                 obj.setText(str(value))  # Replace bad item content
@@ -526,7 +434,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         table = self.geometry_table
         row_count = table.rowCount()         # get number of rows
         for row in range(row_count):
-            row_values = self.get_table_row(table, row)
+            row_values = self.geometry_table.get_table_row(row)
             X.append(row_values[0])
             Y.append(row_values[1])
             T.append(row_values[2])
@@ -554,7 +462,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             section.set_wallNodeN(value)  # Send input value to section class
         except ValueError:
             # value = 25  # set value back to default
-            self.show_msg_box(['Geometry input error', 'Input value "{}" for {} is not valid. {} returned to default value.'.format(obj.text(), 'no. of data points', 'No. of data points')])
+            self.show_msg_box(['Geometry input error',
+                               f'Input value "{obj.text()}" for no. of data points is not valid. No. of data points returned to default value.'])
             value = Geometry.Wall.wallNodeN  # set value back to class default
             obj.setText(str(value))  # Replace bad item content
 
@@ -595,7 +504,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
     def getSF(self):
         table = self.SectionForces_tableWidget
-        row_values = self.get_table_row(table, 0)
+        row_values = self.SectionForces_tableWidget.get_table_row(0)
 
         N, My, Mz, Vy, Vz, T = row_values
 
@@ -612,22 +521,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # table.insertRow(0)
         N, My, Mz, Vy, Vz, T = SF.N, SF.My, SF.Mz, SF.Vy, SF.Vz, SF.T
         for col, value in enumerate([N, My, Mz, Vy, Vz, T]):
-                # table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
-                table.setItem(0, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
-
-    def get_table_row(self, table, row):
-        col_count = table.columnCount()                         # get number of columns
-        row_values = []
-        for col in range(col_count):
-            item = table.item(row, col)                         # Retrieve item from the cell
-            try:
-                row_values.append(float(item.text()))           # Add item text to list as float
-            except ValueError:
-                header = table.horizontalHeaderItem(col).text()
-                self.show_msg_box(['Table input error', 'Input value "{}" for row index {} in {} column not valid. Value set to zero.'.format(item.text(), row, header)])
-                item.setText('0')                               # Replace bad item content
-                row_values.append(0.0)                          # Add zero to list
-        return row_values
+            # table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
+            table.setItem(0, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
 
     def update_rho_tooltips(self):
         for row in range(self.geometry_table.rowCount()):
@@ -637,10 +532,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 self.geometry_table.item(row, col).setToolTip(f'{rho*T*10**3} mm2/m')
 
     def geometry_plot(self):
-        self.graphicsViewGeometry.awaits_click = False          # properly triggered by manual change in geometry table thus no longer awaits node_coords_by_click
-        section = self.get_geometry()                            # Load geometry data
-        self.update_rho_tooltips()  # update tooltips after get_geometry have checked the inputs
-        self.graphicsViewGeometry.plot_all(section)             # update plot
+        section = self.get_geometry()                   # Load geometry data
+        self.update_rho_tooltips()                      # update tooltips after get_geometry have checked the inputs
+        self.graphicsViewGeometry.plot_all(section)     # update plot
 
     def material_plot(self):
         # Load material data

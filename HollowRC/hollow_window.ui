@@ -200,7 +200,7 @@
               <item>
                <widget class="QLabel" name="label_24">
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/Figures/resources/coordinates_and_sign_convention.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string/>
                 </property>
                 <property name="pixmap">
                  <pixmap>:/Figures/resources/coordinates_and_sign_convention.PNG</pixmap>
@@ -289,7 +289,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QTableWidget" name="geometry_table">
+               <widget class="MyTable" name="geometry_table">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1259,7 +1259,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QTableWidget" name="SectionForces_tableWidget">
+               <widget class="MyTable" name="SectionForces_tableWidget">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1656,6 +1656,11 @@
    <class>MyResultView</class>
    <extends>QGraphicsView</extends>
    <header>Plots</header>
+  </customwidget>
+  <customwidget>
+   <class>MyTable</class>
+   <extends>QTableWidget</extends>
+   <header>TableInterface</header>
   </customwidget>
  </customwidgets>
  <resources>

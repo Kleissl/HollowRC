@@ -203,7 +203,7 @@
                  <string/>
                 </property>
                 <property name="pixmap">
-                 <pixmap>:/Figures/resources/coordinates_and_sign_convention.PNG</pixmap>
+                 <pixmap resource="resources.qrc">:/Figures/resources/coordinates_and_sign_convention.png</pixmap>
                 </property>
                </widget>
               </item>
@@ -610,18 +610,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_2">
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Cross-section geometry:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_9">
               <item>
                <widget class="MyGeometryView" name="graphicsViewGeometry">
@@ -636,6 +624,19 @@
              </layout>
             </item>
            </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <pointsize>9</pointsize>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="text">
+             <string>Cross-section nodes can be moved by click &amp; drag</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1138,7 +1139,7 @@
                    </font>
                   </property>
                   <property name="statusTip">
-                   <string> Note: use linear elastic stress-strain for consistency with disk stresses</string>
+                   <string/>
                   </property>
                   <property name="text">
                    <string>Plane dual-section &amp;&amp; sigma-tau equilibrium (SLS)</string>
@@ -1148,13 +1149,6 @@
                   </property>
                   <property name="tristate">
                    <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_18">
-                  <property name="text">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#5e5e5e;&quot;&gt;Note: use linear elastic stress-strain for consistency with membrane stresses&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                  </widget>
                 </item>
@@ -1266,10 +1260,25 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>500</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>745</width>
+                  <height>56</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
                  </font>
+                </property>
+                <property name="horizontalScrollBarPolicy">
+                 <enum>Qt::ScrollBarAlwaysOff</enum>
                 </property>
                 <property name="sizeAdjustPolicy">
                  <enum>QAbstractScrollArea::AdjustToContents</enum>
@@ -1312,6 +1321,16 @@
                   <string>T [kNm]</string>
                  </property>
                 </column>
+                <column>
+                 <property name="text">
+                  <string>UR_bendig</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>UR_shear</string>
+                 </property>
+                </column>
                 <item row="0" column="0">
                  <property name="text">
                   <string>-17000</string>
@@ -1345,16 +1364,98 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="load_fac_label">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                 </font>
+               <spacer name="horizontalSpacer_7">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="text">
-                 <string>No load-factor currently applied</string>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Preferred</enum>
                 </property>
-               </widget>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>5</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_3">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetDefaultConstraint</enum>
+                </property>
+                <item>
+                 <spacer name="verticalSpacer_8">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Minimum</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>10</width>
+                    <height>10</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_5">
+                  <property name="font">
+                   <font>
+                    <pointsize>9</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>No. of points pr. wall element:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEdit_wallNodeN">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>9</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>25</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Minimum</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>10</width>
+                    <height>10</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </item>
               <item>
                <spacer name="horizontalSpacer_4">
@@ -1363,7 +1464,7 @@
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>40</width>
+                  <width>5</width>
                   <height>20</height>
                  </size>
                 </property>
@@ -1372,32 +1473,14 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="label_5">
+             <widget class="QLabel" name="load_fac_label">
               <property name="font">
                <font>
                 <pointsize>9</pointsize>
                </font>
               </property>
               <property name="text">
-               <string>No. of data points pr. wall element:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_wallNodeN">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>25</string>
+               <string>No load-factor currently applied</string>
               </property>
              </widget>
             </item>
@@ -1412,22 +1495,10 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+                <height>10</height>
                </size>
               </property>
              </spacer>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_16">
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Plot results (positive value drawn on the outside of the section). Click to read values in statusbar.</string>
-              </property>
-             </widget>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -1541,6 +1612,19 @@
                </layout>
               </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_16">
+              <property name="font">
+               <font>
+                <pointsize>9</pointsize>
+                <italic>true</italic>
+               </font>
+              </property>
+              <property name="text">
+               <string>Positive value drawn on the outside of the section. Click to read values in statusbar.</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

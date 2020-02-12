@@ -27,6 +27,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
     '''
     HollowRC window class
     '''
+    Res = None
+
     def __init__(self):
         super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
         self.setupUi(self)  # setup layout and widgets defined in Qt Designer
@@ -45,25 +47,21 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.removeRowButton.clicked.connect(self.geometry_table.remove_row)
         self.moveUpRowButton.clicked.connect(self.geometry_table.move_row_up)
         self.moveDownRowButton.clicked.connect(self.geometry_table.move_row_down)
-        # self.pushButton_calcSLS.clicked.connect(self.calculateSLS)
-        # self.pushButton_calcULS.clicked.connect(self.calculateULS)
-        self.Res = None
 
         # --- Signals ---
-        # update geometry plot if table item changes
-        self.geometry_table.itemChanged.connect(self.geometry_plot)
-        # call set_geometry method if a new_section signal is received
-        self.graphicsViewGeometry.new_section.connect(self.set_geometry)
+        self.geometry_table.itemChanged.connect(self.geometry_plot)  # update geometry plot if table item changes
+        self.graphicsViewGeometry.new_section.connect(self.set_geometry)  # call set_geometry method if a new_section signal is received
+        self.graphicsViewGeometry.scene_clicked.connect(self.geometry_table.node_coords_by_click)  # pass clicked coordinates to table object
+        self.tabWidget.currentChanged.connect(self.tab_changed)
 
-        self.graphicsViewGeometry.scene_clicked.connect(self.geometry_table.node_coords_by_click)
-
-        # connect the status_str signal with the update_statusline method
+        # connect the status message signals with the update_statusline method
         self.graphicsViewResults.status_str.connect(self.update_statusline)
         self.geometry_table.status_msg.connect(self.update_statusline)
-        self.geometry_table.error_msg.connect(self.show_msg_box)
+        self.SectionForces_tableWidget.status_msg.connect(self.update_statusline)
 
-        # self.graphicsViewGeometry.itemChanged.connect(self.node_moved)
-        self.tabWidget.currentChanged.connect(self.tab_changed)
+        # connect the error message signals with the show_msg_box method
+        self.geometry_table.error_msg.connect(self.show_msg_box)
+        self.SectionForces_tableWidget.error_msg.connect(self.show_msg_box)
 
         check_boxes = []
         for j in range(10):  # update result plot if plot checkbox is changed
@@ -114,6 +112,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.geometry_table.horizontalHeader().setVisible(True)             # show hor. header
         self.SectionForces_tableWidget.horizontalHeader().setVisible(True)  # show hor. header
         self.SectionForces_tableWidget.verticalHeader().setVisible(True)    # show vert. header
+        self.SectionForces_tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # uniform column width when stretching
+        self.SectionForces_tableWidget.set_cell_value(0, 6, '', flag=QtCore.Qt.ItemIsEnabled)  # locks an item
+        self.SectionForces_tableWidget.set_cell_value(0, 7, '', flag=QtCore.Qt.ItemIsEnabled)  # locks an item
 
         # Fix UI conversion error where table cell tooltips goes missing
         self.update_rho_tooltips()
@@ -276,7 +277,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             # Call analysis
             if self.checkBox_analSLS_1.isChecked():
                 # execute SLS analysis
-                string = self.checkBox_analSLS_1.text()
+                string = self.checkBox_analSLS_1.text().replace('&&', '&')
                 self.statusbar.showMessage(string + ' analysis initiated')
                 self.Res = Analysis.SLS_analysis(section, SF, Mat)
                 error_msg = None  # errors are now passed as exceptions
@@ -284,7 +285,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 self.statusbar.showMessage(string + ' analysis completed')
             elif self.checkBox_analULS_1.isChecked():
                 # execute ULS analysis
-                string = self.checkBox_analULS_1.text()
+                string = self.checkBox_analULS_1.text().replace('&&', '&')
                 self.statusbar.showMessage(string + ' analysis initiated')
                 self.Res, error_msg = Analysis.ULS_analysis(section, SF, Mat)
                 self.statusbar.showMessage(string + ' analysis completed')
@@ -467,9 +468,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             value = Geometry.Wall.wallNodeN  # set value back to class default
             obj.setText(str(value))  # Replace bad item content
 
-        self.statusbar.showMessage('Geometry table data loaded')
-
-        # return Geometry
         return section
 
     def set_geometry(self, section):
@@ -504,15 +502,12 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
     def getSF(self):
         table = self.SectionForces_tableWidget
-        row_values = self.SectionForces_tableWidget.get_table_row(0)
-
-        N, My, Mz, Vy, Vz, T = row_values
+        row_values = table.get_table_row(0, replace_invalid=False)  # avoid replacing URs
+        N, My, Mz, Vy, Vz, T = row_values[:6]
 
         # Dump into SectionForces class
         SF = SectionForces.SectionForces(N, My, Mz, Vy, Vz, T)
 
-        # print("Section forces table data loaded")
-        self.statusbar.showMessage('Section forces table data loaded')
         return SF
 
     def setSF(self, SF):

@@ -92,21 +92,23 @@ class MyTable(QTableWidget):
             self.itemChanged.emit(QTableWidgetItem())
             self.status_msg.emit('Recent action: row moved down')  # emit status_msg signal
 
-    def get_table_row(self, row):
+    def get_table_row(self, row, replace_invalid=True):
         ''' Extract values from a specified row id '''
         self.awaits_click = False  # properly triggered by manual change in geometry table thus no longer awaits node_coords_by_click
         col_count = self.columnCount()                         # get number of columns
         row_values = []
         for col in range(col_count):
             item = self.item(row, col)                         # Retrieve item from the cell
-            try:
-                row_values.append(float(item.text()))           # Add item text to list as float
-            except ValueError:
-                header = self.horizontalHeaderItem(col).text()
-                self.error_msg.emit(['Table input error',
-                                     f'Input value "{item.text()}" for row index {row} in {header} column not valid. Value set to zero.'])
-                item.setText('0')                               # Replace bad item content
-                row_values.append(0.0)                          # Add zero to list
+            if item:
+                try:
+                    row_values.append(float(item.text()))           # Add item text to list as float
+                except ValueError:
+                    if replace_invalid:
+                        header = self.horizontalHeaderItem(col).text()
+                        self.error_msg.emit(['Table input error',
+                                            f'Input value "{item.text()}" for row index {row} in {header} column not valid. Value set to zero.'])
+                        item.setText('0')                               # Replace bad item content
+                        row_values.append(0.0)                          # Add zero to list
         return row_values
 
     def node_coords_by_click(self, signal_value):
@@ -122,3 +124,15 @@ class MyTable(QTableWidget):
             y_item.setText(str(-y))            # Replace bad item content
             self.blockSignals(False)
             self.itemChanged.emit(QTableWidgetItem())
+
+    def set_cell_value(self, row, col, value, flag=None):
+        ''' Assign a value to a specified cell '''
+        item = self.item(row, col)
+        if item:
+            # only edit text such that properties like ItemIsEnabled is maintained
+            item.setText(str(value))
+        else:
+            item = QTableWidgetItem(str(value))
+            self.setItem(row, col, item)
+        if flag:
+            item.setFlags(flag)

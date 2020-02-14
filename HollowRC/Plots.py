@@ -48,12 +48,12 @@ class MyGeometryView(MyGraphicsView):
         Y[wall_id] -= dy
         self.section.set_XY(X, Y)                # update current section instance with the new coordinates
         self.new_section.emit(self.section)      # emit new_section signal for the window class to catch
+
+    def plot(self, section):
+        self.section = section
         self.refresh_plot()
 
-    def refresh_plot(self, section=None):
-        # original way of plotting all
-        if section:
-            self.section = section
+    def refresh_plot(self):
         self.clear_scene()
 
         # unpack geometry properties
@@ -248,6 +248,7 @@ class MyResultView(MyGraphicsView):
     """
 
     status_str = QtCore.Signal(object)  # prepare "status_str" signal
+    Res = None
 
     def __init__(self, *args, **kwargs):
 
@@ -263,18 +264,21 @@ class MyResultView(MyGraphicsView):
     def set_check_boxes(self, checkbox_list):
         self.check_boxes = checkbox_list
 
-    def refresh_plot(self, Res):
-        # original way of plotting all
+    def plot(self, Res):
+        self.Res = Res
+        self.refresh_plot()
+
+    def refresh_plot(self):
         self.clear_scene()
 
         # check for empty result
-        if not Res:
+        if not self.Res:
             return
 
         # unpack results dictionary
-        x = Res.x
-        y = Res.y
-        wallAngles = Res.wallAngles
+        x = self.Res.x
+        y = self.Res.y
+        wallAngles = self.Res.wallAngles
 
         # Styles
         bold_pencil = QtGui.QPen(QtCore.Qt.DashLine)
@@ -305,7 +309,7 @@ class MyResultView(MyGraphicsView):
         # calculate largest dimension of cross-section
         section_dim = max(max(y) - min(y), max(x) - min(x))
 
-        for j in range(Res.plot_count):  # looping over the different result distributions
+        for j in range(self.Res.plot_count):  # looping over the different result distributions
             # select styles
             pencil = QtGui.QPen(colour_list[j])  # create pen with next colour
             fill = QtGui.QBrush(colour_list[j])  # create brush with same colour
@@ -317,22 +321,22 @@ class MyResultView(MyGraphicsView):
             # update checkbox visibility
             if not check_box.isVisible():
                 check_box.setVisible(True)
-            check_box.setText(Res.plot_names[j])
+            check_box.setText(self.Res.plot_names[j])
             check_box.setStyleSheet("color: " + colour_list[j].name.decode())
 
             # plot if checked
             if check_box.isChecked():
-                scale = Res.plot_scale[j] * section_dim / max(1e-12, max(abs(Res.plot_data[j])))
+                scale = self.Res.plot_scale[j] * section_dim / max(1e-12, max(abs(self.Res.plot_data[j])))
                 rect = QtGui.QPolygonF()  # outline polygon
-                for i in range(len(Res.x)):
-                    PX = Res.x[i] + scale * Res.plot_data[j][i] * math.sin(-wallAngles[i])
-                    PY = Res.y[i] + scale * Res.plot_data[j][i] * math.cos(-wallAngles[i])
-                    if Res.x[i] == Res.x[i - 1] and Res.y[i] == Res.y[i - 1]:  # new wall element started
-                        rect.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                for i in range(len(self.Res.x)):
+                    PX = self.Res.x[i] + scale * self.Res.plot_data[j][i] * math.sin(-wallAngles[i])
+                    PY = self.Res.y[i] + scale * self.Res.plot_data[j][i] * math.cos(-wallAngles[i])
+                    if self.Res.x[i] == self.Res.x[i - 1] and self.Res.y[i] == self.Res.y[i - 1]:  # new wall element started
+                        rect.append(QtCore.QPointF(self.Res.x[i], -self.Res.y[i]))  # add plot point at geometric corner
                         # prepare/plot shading
                         if i > 0:
                             # plot shading
-                            rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                            rect2.append(QtCore.QPointF(self.Res.x[i], -self.Res.y[i]))  # add plot point at geometric corner
                             poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
                             poly_item.setBrush(fill)
                             poly_item.setOpacity(0.2)
@@ -340,7 +344,7 @@ class MyResultView(MyGraphicsView):
                             # self.scene.addPolygon(rect2, brush=fill)
 
                         rect2 = QtGui.QPolygonF()  # shading polygon
-                        rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                        rect2.append(QtCore.QPointF(self.Res.x[i], -self.Res.y[i]))  # add plot point at geometric corner
                         rect2.append(QtCore.QPointF(PX, -PY))
                     else:
                         # add point for shading polygon
@@ -348,16 +352,16 @@ class MyResultView(MyGraphicsView):
                     rect.append(QtCore.QPointF(PX, -PY))
 
                     # prepare line for mouse clicks
-                    line = QtCore.QLineF(PX, -PY, Res.x[i], -Res.y[i])  # x pos. right, y pos. down
+                    line = QtCore.QLineF(PX, -PY, self.Res.x[i], -self.Res.y[i])  # x pos. right, y pos. down
                     # line_item = QtWidgets.QGraphicsLineItem(line)
                     line_item = myLine(line)
                     line_item.setPen(pencil)
-                    line_item.set_data_str('{}: {:.2f} {}'.format(Res.plot_names[j], Res.plot_data[j][i], Res.plot_units[j]))  # string for click ev.
+                    line_item.set_data_str('{}: {:.2f} {}'.format(self.Res.plot_names[j], self.Res.plot_data[j][i], self.Res.plot_units[j]))  # string for click ev.
                     line_item.setAcceptHoverEvents(True)
                     self.scene.addItem(line_item)
 
                 # plot shading
-                rect2.append(QtCore.QPointF(Res.x[i], -Res.y[i]))  # add plot point at geometric corner
+                rect2.append(QtCore.QPointF(self.Res.x[i], -self.Res.y[i]))  # add plot point at geometric corner
                 poly_item = QtWidgets.QGraphicsPolygonItem(rect2)
                 poly_item.setBrush(fill)
                 poly_item.setOpacity(0.2)
@@ -366,7 +370,7 @@ class MyResultView(MyGraphicsView):
                 self.scene.addPolygon(rect, pen=pencil)
 
         # Hide the remaining unneeded check boxes
-        for j in range(Res.plot_count, 10):
+        for j in range(self.Res.plot_count, 10):
             # check_box = getattr(self, 'checkBox_plot' + str(j + 1))
             check_box = self.check_boxes[j]
             check_box.setVisible(False)

@@ -37,6 +37,14 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.tag = 'v1.5'
         self.label_version.setText(self.tag)
 
+        # initiate key parameters
+        self.section = self.get_geometry()
+        self.SF = self.get_SF()
+        self.mat = self.get_material()
+
+        # initiate plots
+        self.graphicsViewGeometry.plot(self.section)
+
         # --- Triggers ---
         # Connect the interactive elements with a custom method)
         self.exitAct.triggered.connect(self.exit_app)
@@ -49,8 +57,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.moveDownRowButton.clicked.connect(self.geometry_table.move_row_down)
 
         # --- Signals ---
-        self.geometry_table.itemChanged.connect(self.geometry_plot)  # update geometry plot if table item changes
-        self.graphicsViewGeometry.new_section.connect(self.set_geometry)  # call set_geometry method if a new_section signal is received
+        self.geometry_table.itemChanged.connect(self.geometry_table_changed)  # update geometry plot if table item changes
+        self.graphicsViewGeometry.new_section.connect(self.set_geometry_table)  # call set_geometry method if a new_section signal is received
         self.graphicsViewGeometry.scene_clicked.connect(self.geometry_table.node_coords_by_click)  # pass clicked coordinates to table object
         self.tabWidget.currentChanged.connect(self.tab_changed)
 
@@ -63,13 +71,15 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.geometry_table.error_msg.connect(self.show_msg_box)
         self.SectionForces_tableWidget.error_msg.connect(self.show_msg_box)
 
+        # result signals
         check_boxes = []
         for j in range(10):  # update result plot if plot checkbox is changed
             check_box = getattr(self, 'checkBox_plot' + str(j+1))
-            check_box.stateChanged.connect(self.refresh_visible_plots)
+            check_box.stateChanged.connect(self.graphicsViewResults.refresh_plot)
             check_boxes.append(check_box)
         self.graphicsViewResults.set_check_boxes(check_boxes)
 
+        # material signals
         obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
                     'alpha_cc', 'gamma_c', 'gamma_s']
         for string in obj_list:
@@ -78,9 +88,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             # update material plot if any of the inputs changes
             obj.textEdited.connect(self.material_changed)
             obj.editingFinished.connect(self.material_editingFinished)  # textChanged/textEdited/editingFinished?
-        self.comboBox_nu.currentIndexChanged.connect(self.material_plot)
-        self.comboBox_concrete.currentIndexChanged.connect(self.material_plot)
-        self.comboBox_reinf.currentIndexChanged.connect(self.material_plot)
+        self.comboBox_nu.currentIndexChanged.connect(self.material_changed)
+        self.comboBox_concrete.currentIndexChanged.connect(self.material_changed)
+        self.comboBox_reinf.currentIndexChanged.connect(self.material_changed)
 
         # analysis checkboxes interaction
         self.checkBox_analSLS_1.toggled.connect(
@@ -140,18 +150,12 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.refresh_visible_plots()
 
     def refresh_visible_plots(self):  # signal/normal function
-        # self.chart.set_geometry(self.graphicsViewConcrete.frameRect())
-        # self.graphicsViewConcrete.resize(??)
         if self.tabWidget.currentIndex() == 1:
-            self.geometry_plot()
+            self.graphicsViewGeometry.refresh_plot()
         elif self.tabWidget.currentIndex() == 2:
             self.material_plot()
         elif self.tabWidget.currentIndex() == 3:
-            # update result plot
-            # try:
-            self.result_plot(self.Res)
-            # except:
-            #     pass
+            self.graphicsViewResults.refresh_plot()
 
     def save_file(self):
         '''
@@ -161,16 +165,13 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             # save file dialog
             openfile = QtWidgets.QFileDialog.getSaveFileName(filter='*.pkj')
             filename = openfile[0]
-            # Load input objects from GUI
-            section = self.get_geometry()
-            SF = self.getSF()
-            Mat = self.get_material()
+            # Load analysis status from GUI
             Analysis = {'checkBox_analSLS_1': self.checkBox_analSLS_1.isChecked(),
                         'checkBox_analULS_1': self.checkBox_analULS_1.isChecked()}
             # open file for writing
             with open(filename, 'wb') as f:
                 # dump objects to file
-                pickle.dump([section, SF, Mat, Analysis], f)
+                pickle.dump([self.section, self.SF, self.mat, Analysis], f)
             print('File saved to ' + filename)
             # update window title
             title = self.title_str + (f' ({filename})')
@@ -192,11 +193,11 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             # open file for reading
             with open(filename, 'rb') as f:
                 # Getting back the objects
-                section, SF, Mat, Analysis = pickle.load(f)
+                self.section, self.SF, self.mat, Analysis = pickle.load(f)
             #  insert variables in GUI
-            self.set_geometry(section)
-            self.setSF(SF)
-            self.set_material(Mat)
+            self.set_geometry_table(self.section)
+            self.set_SF_table(self.SF)
+            self.set_material(self.mat)
             self.checkBox_analSLS_1.setChecked(Analysis['checkBox_analSLS_1'])
             self.checkBox_analULS_1.setChecked(Analysis['checkBox_analULS_1'])
             print('File opened from ' + filename)
@@ -209,11 +210,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             print(e)
             self.show_msg_box('Failed to open file')
 
-            # clear results and plot of results
-            self.Res = None
-            self.result_plot(self.Res)
-            self.refresh_visible_plots()                # <---- NONE OF THIS SEEMS TO WORK !!!
-            self.graphicsViewResults.clear_scene()
+        # clear results and plot of results
+        self.Res = None
+        self.graphicsViewResults.plot(self.Res)  # use plot() to reset Res attribute
 
     def show_msg_box(self, msg_str, title="Error Message",
                      set_load_fac_label=False):
@@ -251,21 +250,19 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
     def initiate_analysis(self):
         # Load input data from tables
-        section = self.get_geometry()
-        SF = self.getSF()
-        Mat = self.get_material()
+        self.SF = self.get_SF()
 
         # check if geometry is valid
-        valid, msg = section.valid()
+        valid, msg = self.section.valid()
         if not valid:
             self.show_msg_box(['The defined geometry is not valid', msg])
             self.Res = None
-            self.refresh_visible_plots()
+            self.graphicsViewResults.plot(self.Res)
             return
 
-        print(section)
-        print(Mat)
-        print(SF)
+        print(self.section)
+        print(self.mat)
+        print(self.SF)
 
         # switch to Loading & Result tab
         self.tabWidget.setCurrentIndex(3)
@@ -278,7 +275,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 # execute SLS analysis
                 string = self.checkBox_analSLS_1.text().replace('&&', '&')
                 self.statusbar.showMessage(string + ' analysis initiated')
-                self.Res = Analysis.SLS_analysis(section, SF, Mat)
+                self.Res = Analysis.SLS_analysis(self.section, self.SF, self.mat)
                 error_msg = None  # errors are now passed as exceptions
                 self.load_fac_label.setText('No load-factor currently applied')  # <-- might not be needed
                 self.statusbar.showMessage(string + ' analysis completed')
@@ -286,7 +283,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 # execute ULS analysis
                 string = self.checkBox_analULS_1.text().replace('&&', '&')
                 self.statusbar.showMessage(string + ' analysis initiated')
-                self.Res, error_msg = Analysis.ULS_analysis(section, SF, Mat)
+                self.Res, error_msg = Analysis.ULS_analysis(self.section, self.SF, self.mat)
                 self.statusbar.showMessage(string + ' analysis completed')
             else:
                 self.Res = None
@@ -307,7 +304,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.load_fac_label.setText('No load-factor currently applied')
 
         # update result plot
-        self.refresh_visible_plots()
+        self.graphicsViewResults.plot(self.Res)
 
         # return mouse cursor to normal ArrowCursor
         self.setCursor(QtCore.Qt.ArrowCursor)
@@ -332,6 +329,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         try:
             value = float(signal_value)   # convert item text to float
             if value > 0:
+                self.mat = self.get_material()
                 self.material_plot()
         except Exception as e:
             pass
@@ -362,13 +360,20 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             except Exception as e:
                 self.show_msg_box(['Material input error',
                                    f'Input value "{obj.text()}" for {string} is not valid. {string} returned to default value.'])
-                Mat = Material.MatProp()
-                value = getattr(Mat, string)  # Get default value from material class
+                mat_default = Material.MatProp()
+                value = getattr(mat_default, string)  # Get default value from material class
                 obj.setText(str(value))  # Replace bad item content
-                self.material_plot()  # plot default value
 
         for obj in obj_list:
             obj.blockSignals(False)
+
+        # update material instance and plot
+        self.mat = self.get_material()
+        self.material_plot()  # plot default value
+
+        # resset results and result plot
+        self.Res = None
+        self.graphicsViewResults.plot(self.Res)
 
     def get_material(self):
         '''
@@ -469,7 +474,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
         return section
 
-    def set_geometry(self, section):
+    def set_geometry_table(self, section):
         '''
         Populate table with section instance attributes
         '''
@@ -498,18 +503,25 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         obj = self.lineEdit_wallNodeN
         value = wall.wallNodeN          # get value from last wall instance
         obj.setText(str(value))         # Replace bad item content
+        self.geometry_table_changed()
 
-    def getSF(self):
+    def geometry_table_changed(self):
+        self.section = self.get_geometry()            # Load geometry data
+        self.update_rho_tooltips()                    # update tooltips after get_geometry have checked the inputs
+        self.graphicsViewGeometry.plot(self.section)  # update plot
+        self.Res = None
+        self.graphicsViewResults.plot(self.Res)
+
+    def get_SF(self):
         table = self.SectionForces_tableWidget
         row_values = table.get_table_row(0, replace_invalid=False)  # avoid replacing URs
         N, My, Mz, Vy, Vz, T = row_values[:6]
 
         # Dump into SectionForces class
         SF = SectionForces.SectionForces(N, My, Mz, Vy, Vz, T)
-
         return SF
 
-    def setSF(self, SF):
+    def set_SF_table(self, SF):
         table = self.SectionForces_tableWidget
         # table.removeRow(0)       # The row header "LC" is lost if the row is removed/inserted
         # table.insertRow(0)
@@ -517,29 +529,35 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         for col, value in enumerate([N, My, Mz, Vy, Vz, T]):
             # table.setItem(0, col, QtWidgets.QTableWidgetItem(str(value)))  # set item to row below
             table.setItem(0, col, QtWidgets.QTableWidgetItem('{:.6g}'.format(value)))  # set item to row below
+        self.SF_table_changed()
+
+    def SF_table_changed(self):
+        self.SF = self.get_SF()
+        # clear result plot
+        self.Res = None
+        self.graphicsViewResults.plot(self.Res)
+
+        # clear UR
+        for col in [6, 7]:
+            self.SectionForces_tableWidget.set_cell_value(0, col, "")
 
     def update_rho_tooltips(self):
-        for row in range(self.geometry_table.rowCount()):
-            T = float(self.geometry_table.item(row, 2).text())
+        table = self.geometry_table
+        table.blockSignals(True)
+        for row in range(table.rowCount()):
+            T = float(table.item(row, 2).text())
             for col in range(3, 5):
-                rho = float(self.geometry_table.item(row, col).text())
-                self.geometry_table.item(row, col).setToolTip(f'{rho*T*10**3} mm2/m')
-
-    def geometry_plot(self):
-        section = self.get_geometry()                    # Load geometry data
-        self.update_rho_tooltips()                       # update tooltips after get_geometry have checked the inputs
-        self.graphicsViewGeometry.refresh_plot(section)  # update plot
+                rho = float(table.item(row, col).text())
+                table.item(row, col).setToolTip(f'{rho*T*10**3} mm2/m')
+        table.blockSignals(False)
 
     def material_plot(self):
-        # Load material data
-        Mat = self.get_material()
-
         # generate plot series
         seriesC = QtCharts.QtCharts.QLineSeries()
         seriesR = QtCharts.QtCharts.QLineSeries()
         for strain in np.linspace(-0.0035, 0.003, num=200):
-            seriesC.append(strain, Mat.concreteStress(strain))
-            seriesR.append(strain, Mat.reinforcementStress(strain))
+            seriesC.append(strain, self.mat.concreteStress(strain))
+            seriesR.append(strain, self.mat.reinforcementStress(strain))
 
         # Setup concrete chart area
         self.chartC = QtCharts.QtCharts.QChart()
@@ -575,11 +593,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         chartViewC.show()  # cannot get the chart to fit without this
         chartViewR.show()  # cannot get the chart to fit without this
         # chartView.fitInView(self.chart.Geometry(), QtCore.Qt.KeepAspectRatio)
-
-    def result_plot(self, Res):
-        # print('calling result plot class')
-        self.graphicsViewResults.refresh_plot(Res)             # update plot
-        # print('finished calling result plot class')
 
     def update_statusline(self, string):
         self.statusbar.showMessage(string)

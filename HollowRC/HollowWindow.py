@@ -131,7 +131,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.tabWidget.setCurrentIndex(0)
 
     def tab_changed(self):  # signal function
-        pass
         # if self.checkBox_analSLS_1.isChecked():
         #     self.analyseAct.setText('Analyse SLS')
         # elif self.checkBox_analULS_1.isChecked():
@@ -527,9 +526,9 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 self.geometry_table.item(row, col).setToolTip(f'{rho*T*10**3} mm2/m')
 
     def geometry_plot(self):
-        section = self.get_geometry()                   # Load geometry data
-        self.update_rho_tooltips()                      # update tooltips after get_geometry have checked the inputs
-        self.graphicsViewGeometry.plot_all(section)     # update plot
+        section = self.get_geometry()                    # Load geometry data
+        self.update_rho_tooltips()                       # update tooltips after get_geometry have checked the inputs
+        self.graphicsViewGeometry.refresh_plot(section)  # update plot
 
     def material_plot(self):
         # Load material data
@@ -579,28 +578,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
 
     def result_plot(self, Res):
         # print('calling result plot class')
-        self.graphicsViewResults.plot_all(Res)             # update plot
+        self.graphicsViewResults.refresh_plot(Res)             # update plot
         # print('finished calling result plot class')
-
-    # class FitSceneInViewGraphicsView(QtWidgets.QGraphicsView):
-    #     """
-    #     Extension of QGraphicsView that fits the scene rectangle of the scene into the view when the view is shown.
-    #     This avoids problems with the size of the view different before any layout can take place and therefore
-    #     fitInView failing.
-    #     """
-    #     def __init__(self, *args, **kwargs):
-    #         super().__init__(*args, **kwargs)
-    #     def showEvent(self, event):
-    #         """
-    #         The view is shown (and therefore has correct size). We fit the scene rectangle into the view without
-    #         distorting the scene proportions.
-    #         """
-    #         self.fitInView(self.sceneRect(), QtCore.Qt.KeepAspectRatio)
-    #         super().showEvent(event)
-
-    def resizeEvent(self, event):  # overwrites the resizeEvent
-        self.refresh_visible_plots()
-        return QtWidgets.QMainWindow.resizeEvent(self, event)
 
     def update_statusline(self, string):
         self.statusbar.showMessage(string)

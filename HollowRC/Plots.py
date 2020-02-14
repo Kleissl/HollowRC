@@ -2,32 +2,43 @@ import math
 from PySide2 import QtGui, QtWidgets, QtCore, QtCharts  # Import the Qt modules we'll need
 
 
-class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
+class MyGraphicsView(QtWidgets.QGraphicsView):
     '''
-    Classes for my plot scenes
+    Custom QGraphicsView used as abstract base class for the MyGeometryView and MyResultView.
+    This is an extension of QGraphicsView that incorporated some of the shared features of the graphics views.
+    This also ensures to fit the scene rectangle of the scene into the view when the view is resized (fitInView).
     '''
-    # def __init__(self):
-    #     # super(TableInterface, self).__init__()  # use super so we return parent object of this class
-    #     super().__init__()  # initialize the QMainWindow parent object from the Qt Designer file
-    #     QMainWindow.__init__(self)
-
-    # Signals
-    new_section = QtCore.Signal(object)  # prepare "new_section" signal
-    scene_clicked = QtCore.Signal(object)  # prepare "scene_clicked" signal
 
     def __init__(self, *args, **kwargs):
-        QtWidgets.QGraphicsView.__init__(self, *args, **kwargs)
-        # QtCore.QObject.__init__(self)  # the QQbject is for the signal            <---- RuntimeError: You can't initialize an object twice!
+        super().__init__(*args, **kwargs)
 
         # setup graphics scene
         self.scene = QtWidgets.QGraphicsScene()     # creates a scene
         self.setScene(self.scene)                   # set the created scene
 
     def clear_scene(self):
-        self.scene.clear()                          # Clear scene
-        # scene.clear()  # Clear
-        # view.scene().disconnect()
-        # view.close()
+        # self.scene.clear()                     # clear scene throws an RuntimeError: Internal C++ object (MyEllipse) already deleted
+        self._old_scene = self.scene             # RuntimeError is avoided by keeping the old scene instance alive
+        self.scene = QtWidgets.QGraphicsScene()  # creates a new scene instance
+        self.setScene(self.scene)                # set the created scene
+
+    def resizeEvent(self, event):
+        """
+        Extend the resizeEvent method so it now also calls fitInView.
+        fitInView fits the scene rectangle into the view without distorting the scene proportions
+        """
+        self.fitInView(self.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        super().resizeEvent(event)
+
+
+class MyGeometryView(MyGraphicsView):
+    '''
+    Custom MyGraphicsView class for the geometry graphics view
+    '''
+
+    # Signals
+    new_section = QtCore.Signal(object)  # prepare "new_section" signal
+    scene_clicked = QtCore.Signal(object)  # prepare "scene_clicked" signal
 
     def update_section(self, signal_value):  # signal receiver
         dx, dy, wall_id = signal_value
@@ -37,14 +48,12 @@ class MyGeometryView(QtWidgets.QGraphicsView, QtCore.QObject):
         Y[wall_id] -= dy
         self.section.set_XY(X, Y)                # update current section instance with the new coordinates
         self.new_section.emit(self.section)      # emit new_section signal for the window class to catch
-        self.scene_backup = self.scene           # store a copy of the scene to avoid RuntimeError: Internal C++ object (MyEllipse) already deleted.
-        self.scene = QtWidgets.QGraphicsScene()  # creates a new scene instance
-        self.setScene(self.scene)                # set the created scene
-        self.plot_all(self.section)
+        self.refresh_plot()
 
-    def plot_all(self, section):
+    def refresh_plot(self, section=None):
         # original way of plotting all
-        self.section = section
+        if section:
+            self.section = section
         self.clear_scene()
 
         # unpack geometry properties
@@ -233,30 +242,20 @@ class MyEllipse(QtWidgets.QGraphicsEllipseItem, QtCore.QObject):
 
 
 # New Classes for my plot scenes
-class MyResultView(QtWidgets.QGraphicsView):
+class MyResultView(MyGraphicsView):
+    """
+    Custom MyGraphicsView class for the result graphics view
+    """
 
     status_str = QtCore.Signal(object)  # prepare "status_str" signal
 
     def __init__(self, *args, **kwargs):
-        """
-        ...
-        """
+
         QtWidgets.QGraphicsView.__init__(self, *args, **kwargs)
 
         # setup graphics scene
         self.scene = QtWidgets.QGraphicsScene()     # creates a scene
         self.setScene(self.scene)                   # set the created scene
-
-    def clear_scene(self):
-        self.scene.clear()                          # Clear scene
-        # self.items().clear()
-        # self.resetCachedContent()
-        # self.scene = QtWidgets.QGraphicsScene()     # creates a scene
-        # self.setScene(self.scene)                   # set the created scene
-        # print('result scene cleared')
-        # self.viewport().update()
-        # self.update()
-        # self.scene.update()
 
     def show_result_values(self, signal_value):  # signal receiver
         pass
@@ -264,7 +263,7 @@ class MyResultView(QtWidgets.QGraphicsView):
     def set_check_boxes(self, checkbox_list):
         self.check_boxes = checkbox_list
 
-    def plot_all(self, Res):
+    def refresh_plot(self, Res):
         # original way of plotting all
         self.clear_scene()
 
@@ -401,18 +400,14 @@ class MyResultView(QtWidgets.QGraphicsView):
 
 
 class myLine(QtWidgets.QGraphicsLineItem):
-    # def __init__(self, parent=None):
-    #     # QtWidgets.QGraphicsScene.__init__(self, parent)
-    #     # super(MyGraphicsScene, self).__init__(parent)
-    #     super().__init__()
-    #     self.setSceneRect(-100, -100, 200, 200)
-
+    '''
+    A customized QGraphicsLineItem that reimplements the hovering events so
+    '''
     def set_data_str(self, string):
         self.data_str = string
         self.setToolTip(string)
 
     def hoverEnterEvent(self, event):
-        # print('hoverEnterEvent')
         self.setCursor(QtCore.Qt.PointingHandCursor)  # update cursor
         pen = self.pen()
         self.original_width = pen.width()
@@ -421,7 +416,6 @@ class myLine(QtWidgets.QGraphicsLineItem):
         return QtWidgets.QGraphicsLineItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        # print('hoverLeaveEvent')
         pen = self.pen()
         pen.setWidth(self.original_width)
         self.setPen(pen)

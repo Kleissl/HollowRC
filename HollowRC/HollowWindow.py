@@ -260,6 +260,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
             self.graphicsViewResults.plot(self.Res)
             return
 
+        print('---------- Analysis inputs ----------')
         print(self.section)
         print(self.mat)
         print(self.SF)
@@ -320,116 +321,6 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         cp = QtWidgets.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
-    def material_changed(self, signal_value):
-        '''
-        This method is executed when the material inputs are changed.
-        Live update the plots when positive floats are provided
-        '''
-        try:
-            value = float(signal_value)   # convert item text to float
-            if value > 0:
-                self.mat = self.get_material()
-                self.material_plot()
-        except Exception as e:
-            pass
-
-    def material_editingFinished(self):
-        '''
-        This method is executed when a material input is finished editing.
-        Thorough check of all material inputs + resets invalid inputs
-        '''
-        # getting the ext inputs or overwriting bad content
-        string_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
-                       'alpha_cc', 'gamma_c', 'gamma_s']
-
-        # get e.g. obj = self.lineEdit_f_ck
-        obj_list = [getattr(self, 'lineEdit_' + s) for s in string_list]
-
-        # changing focus to another tracked input yields double exec
-        # All objects are therefore initially blocked
-        for obj in obj_list:
-            obj.blockSignals(True)
-
-        for obj, string in zip(obj_list, string_list):
-            try:
-                value = float(obj.text())   # convert item text to float
-                if value <= 0:
-                    raise ValueError
-                # setattr(Mat, string, value)  # Send input value to class
-            except Exception as e:
-                self.show_msg_box(['Material input error',
-                                   f'Input value "{obj.text()}" for {string} is not valid. {string} returned to default value.'])
-                mat_default = Material.MatProp()
-                value = getattr(mat_default, string)  # Get default value from material class
-                obj.setText(str(value))  # Replace bad item content
-
-        for obj in obj_list:
-            obj.blockSignals(False)
-
-        # update material instance and plot
-        self.mat = self.get_material()
-        self.material_plot()  # plot default value
-
-        # resset results and result plot
-        self.Res = None
-        self.graphicsViewResults.plot(self.Res)
-
-    def get_material(self):
-        '''
-        Build material instance from material input cells
-        '''
-        # initiate material instance
-        Mat = Material.MatProp()
-
-        # getting the ext inputs or overwriting bad content     <-- OVERWRITES SHOULD HAPPEN ON CHANGED-SIGNAL
-        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
-                    'alpha_cc', 'gamma_c', 'gamma_s']
-        for string in obj_list:
-            # get e.g. obj = self.lineEdit_f_ck
-            obj = getattr(self, 'lineEdit_' + string)
-            value = float(obj.text())   # convert item text to float
-            setattr(Mat, string, value)  # Send input value to class  <-- should use setter-method
-
-        Mat.update_strengths()  # need to update as f_ck attribute could have been changed
-
-        # set combobox selections (must be after strength update as it updates the stiffnesses)
-        conc_method = self.comboBox_concrete.currentText()
-        reinf_method = self.comboBox_reinf.currentText()
-        Mat.set_methods(conc_method, reinf_method)
-        # Mat.set_nu_method = self.comboBox_nu.currentText()
-
-        # check if stiffness is assignable and update window accordingly
-        assignable, E_cm = Mat.is_conc_stiffness_assignable()
-        if not assignable:
-            self.lineEdit_E_cm.setDisabled(True)
-            # self.stored_E_cm = self.lineEdit_E_cm.text()
-            self.lineEdit_E_cm.setText(str(round(E_cm, 4)))
-        elif not self.lineEdit_E_cm.isEnabled():
-            E_cm = Material.MatProp.E_cm  # load class default E_cm
-            Mat.E_cm = E_cm
-            self.lineEdit_E_cm.setText(str(E_cm))
-            self.lineEdit_E_cm.setDisabled(False)
-
-        return Mat
-
-    def set_material(self, Mat):
-        '''
-        Populate material input cells with material instance attributes
-        '''
-        # set combobox selections
-        self.comboBox_concrete.setEditText(Mat.conc_method)
-        self.comboBox_reinf.setEditText(Mat.reinf_method)
-        # Mat.nu_method
-
-        # set the ext inputs
-        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
-                    'alpha_cc', 'gamma_c', 'gamma_s']
-        for string in obj_list:
-            # get e.g. obj = self.lineEdit_f_ck
-            obj = getattr(self, 'lineEdit_' + string)
-            value = getattr(Mat, string)   # Get value from class
-            obj.setText(str(value))     # Replace text in lineEdit item
 
     def get_geometry(self):
         '''
@@ -512,6 +403,16 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.Res = None
         self.graphicsViewResults.plot(self.Res)
 
+    def update_rho_tooltips(self):
+        table = self.geometry_table
+        table.blockSignals(True)
+        for row in range(table.rowCount()):
+            T = float(table.item(row, 2).text())
+            for col in range(3, 5):
+                rho = float(table.item(row, col).text())
+                table.item(row, col).setToolTip(f'{rho*T*10**3} mm2/m')
+        table.blockSignals(False)
+
     def get_SF(self):
         table = self.SectionForces_tableWidget
         row_values = table.get_table_row(0, replace_invalid=False)  # avoid replacing URs
@@ -541,15 +442,115 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         for col in [6, 7]:
             self.SectionForces_tableWidget.set_cell_value(0, col, "")
 
-    def update_rho_tooltips(self):
-        table = self.geometry_table
-        table.blockSignals(True)
-        for row in range(table.rowCount()):
-            T = float(table.item(row, 2).text())
-            for col in range(3, 5):
-                rho = float(table.item(row, col).text())
-                table.item(row, col).setToolTip(f'{rho*T*10**3} mm2/m')
-        table.blockSignals(False)
+    def material_changed(self, signal_value):
+        '''
+        This method is executed when the material inputs are changed.
+        Live update the plots when positive floats are provided
+        '''
+        try:
+            value = float(signal_value)   # convert item text to float
+            if value > 0:
+                self.mat = self.get_material()
+                self.material_plot()
+        except Exception as e:
+            pass
+
+        # reset results and result plot
+        self.Res = None
+        self.graphicsViewResults.plot(self.Res)
+
+    def material_editingFinished(self):
+        '''
+        This method is executed when a material input is finished editing.
+        Thorough check of all material inputs + resets invalid inputs
+        '''
+        # getting the ext inputs or overwriting bad content
+        string_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                       'alpha_cc', 'gamma_c', 'gamma_s']
+
+        # get e.g. obj = self.lineEdit_f_ck
+        obj_list = [getattr(self, 'lineEdit_' + s) for s in string_list]
+
+        # changing focus to another tracked input yields double exec
+        # All objects are therefore initially blocked
+        for obj in obj_list:
+            obj.blockSignals(True)
+
+        for obj, string in zip(obj_list, string_list):
+            try:
+                value = float(obj.text())   # convert item text to float
+                if value <= 0:
+                    raise ValueError
+                # setattr(Mat, string, value)  # Send input value to class
+            except Exception as e:
+                self.show_msg_box(['Material input error',
+                                   f'Input value "{obj.text()}" for {string} is not valid. {string} returned to default value.'])
+                mat_default = Material.MatProp()
+                value = getattr(mat_default, string)  # Get default value from material class
+                obj.setText(str(value))  # Replace bad item content
+
+        for obj in obj_list:
+            obj.blockSignals(False)
+
+        # update material instance and plot
+        self.mat = self.get_material()
+        self.material_plot()  # plot default value
+
+    def get_material(self):
+        '''
+        Build material instance from material input cells
+        '''
+        # initiate material instance
+        Mat = Material.MatProp()
+
+        # getting the ext inputs or overwriting bad content     <-- OVERWRITES SHOULD HAPPEN ON CHANGED-SIGNAL
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                    'alpha_cc', 'gamma_c', 'gamma_s']
+        for string in obj_list:
+            # get e.g. obj = self.lineEdit_f_ck
+            obj = getattr(self, 'lineEdit_' + string)
+            value = float(obj.text())   # convert item text to float
+            setattr(Mat, string, value)  # Send input value to class  <-- should use setter-method
+
+        Mat.update_strengths()  # need to update as f_ck attribute could have been changed
+
+        # set combobox selections (must be after strength update as it updates the stiffnesses)
+        conc_method = self.comboBox_concrete.currentText()
+        reinf_method = self.comboBox_reinf.currentText()
+        Mat.set_methods(conc_method, reinf_method)
+        # Mat.set_nu_method = self.comboBox_nu.currentText()
+
+        # check if stiffness is assignable and update window accordingly
+        assignable, E_cm = Mat.is_conc_stiffness_assignable()
+        if not assignable:
+            self.lineEdit_E_cm.setDisabled(True)
+            # self.stored_E_cm = self.lineEdit_E_cm.text()
+            self.lineEdit_E_cm.setText(str(round(E_cm, 4)))
+        elif not self.lineEdit_E_cm.isEnabled():
+            E_cm = Material.MatProp.E_cm  # load class default E_cm
+            Mat.E_cm = E_cm
+            self.lineEdit_E_cm.setText(str(E_cm))
+            self.lineEdit_E_cm.setDisabled(False)
+
+        return Mat
+
+    def set_material(self, Mat):
+        '''
+        Populate material input cells with material instance attributes
+        '''
+        # set combobox selections
+        self.comboBox_concrete.setEditText(Mat.conc_method)
+        self.comboBox_reinf.setEditText(Mat.reinf_method)
+        # Mat.nu_method
+
+        # set the ext inputs
+        obj_list = ['f_ck', 'E_cm', 'f_yk', 'E_s',
+                    'alpha_cc', 'gamma_c', 'gamma_s']
+        for string in obj_list:
+            # get e.g. obj = self.lineEdit_f_ck
+            obj = getattr(self, 'lineEdit_' + string)
+            value = getattr(Mat, string)   # Get value from class
+            obj.setText(str(value))     # Replace text in lineEdit item
 
     def material_plot(self):
         # generate plot series
@@ -653,7 +654,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
                 msg_info_str = 'The current version (' + self.tag + ') matches the latest release from https://github.com/Kleissl/HollowRC/releases/latest'
             else:
                 msg_str = 'The application (' + self.tag + ') is NOT up-to-date!'
-                msg_info_str = 'There is a newer release (' + latest_tag + ') from ' + published + ' available for download at https://github.com/Kleissl/HollowRC/releases/latest'
+                msg_info_str = f'There is a newer release ({latest_tag}) from {published} available for download at https://github.com/Kleissl/HollowRC/releases/latest'
             print(msg_str)
             self.show_msg_box([msg_str, msg_info_str], title='Information')
         else:

@@ -113,8 +113,8 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         self.SectionForces_tableWidget.horizontalHeader().setVisible(True)  # show hor. header
         self.SectionForces_tableWidget.verticalHeader().setVisible(True)    # show vert. header
         self.SectionForces_tableWidget.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # uniform column width when stretching
-        self.SectionForces_tableWidget.set_cell_value(0, 6, '', flag=QtCore.Qt.ItemIsEnabled)  # locks an item
-        self.SectionForces_tableWidget.set_cell_value(0, 7, '', flag=QtCore.Qt.ItemIsEnabled)  # locks an item
+        for col in [6, 7]:
+            self.SectionForces_tableWidget.set_cell_value(0, col, '', flag=QtCore.Qt.ItemIsEnabled, background=QtGui.QColor(240, 240, 240))  # locks an item
 
         # Fix UI conversion error where table cell tooltips goes missing
         self.update_rho_tooltips()

@@ -125,7 +125,7 @@ class MyTable(QTableWidget):
             self.blockSignals(False)
             self.itemChanged.emit(QTableWidgetItem())
 
-    def set_cell_value(self, row, col, value, flag=None):
+    def set_cell_value(self, row, col, value, flag=None, background=False):
         ''' Assign a value to a specified cell '''
         item = self.item(row, col)
         if item:
@@ -136,3 +136,5 @@ class MyTable(QTableWidget):
             self.setItem(row, col, item)
         if flag:
             item.setFlags(flag)
+        if background:
+            item.setBackground(background)

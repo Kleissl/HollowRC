@@ -166,13 +166,14 @@ def ULS_analysis(section, SF, Mat, printing=True):
     Res.add_plot(H, 'Shear flow', 'kN/m', 0.20)
     Res.add_plot(H_yield, 'Max shear flow', 'kN/m', 0.20 * max(H_yield) / (max(abs(H)) + 1e-12))
     # Res.add_plot(np.array(ur_over), 'Over-utilization', '', 0.25)
+    Res.load_factors['shear'] = load_fac
 
     print("Shear flow optimization succeeded, Maximum shear load factor is: " + str(xopt[-1]))
-    if 1 - xopt[-1] < 1e-10:  # sufficiently close (within tolorance) to be considered as one
+    if 1 - load_fac < 1e-10:  # sufficiently close (within tolorance) to be considered as one
         error_msg = None
     else:
-        error_msg = ["The section shear force utilization is at {:.1f}%".format(100/xopt[-1]),
-                     "The shown results applies maximized shear load factor of {:.4f}".format(xopt[-1])]
+        error_msg = ["The section shear force utilization is at {:.1f}%".format(100/load_fac),
+                     "The shown results applies maximized shear load factor of {:.4f}".format(load_fac)]
         # error_msg = ["The shown results applies maximized shear load factor:", "Maximum shear load factor = " +
         #          str(xopt[-1])]
 
@@ -321,7 +322,11 @@ def integrateWallShearForces(V, section):
     return sum(Vy), sum(Vz), sum(T)
 
 
-def myObjective(x, grad):  # objective function defining last variable as the objective
+def myObjective(x, grad):
+    '''
+    objective function defining last variable as the objective
+    Used for both bending and shear optimisation when targeting the load factor (last element)
+    '''
     if grad.size > 0:
         grad[:] = [0]*len(grad)
         grad[-1] = 1
@@ -427,10 +432,10 @@ def planeSection(section, SF, Mat):
     """
     Performs a single plane section analysis
     """
-    # --------------- Initial guess of optimization variables based on uncracked analysis ---------------
+    # Initial guess of optimization variables based on uncracked analysis
     x0 = uncracked_strain_state(section, SF, Mat)
 
-    # --------------- Determine the plane strain section for the primary section ---------------
+    # Determine the plane strain state for the primary section
     x = bendingSolution(x0, section, SF, Mat)
 
     # find the bending distributions
@@ -487,6 +492,9 @@ def shear_flow(dist, dist2, SF, section, dx):
 
 
 def bendingSolution(x0, section, SF, Mat):
+    '''
+    Find the strain state that's in equilibrium with SF
+    '''
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, len(x0))  # faster than LN_SBPLX
     opt.set_min_objective(lambda x, grad: errorFunBending(x, section, SF, Mat))
     opt.set_xtol_rel(1e-8)
@@ -539,6 +547,9 @@ def bendingSolution(x0, section, SF, Mat):
 
 
 def errorFunBending(x0, section, SF, Mat):
+    '''
+    Simple error function that gives the SF squared error without gradients
+    '''
     # unload variables
     if len(x0) > 3:
         NA_angle, eps_comp, eps_tens, load_fac = x0
@@ -555,8 +566,9 @@ def errorFunBending(x0, section, SF, Mat):
 
 
 def BendingEQ(section, Mat, NA_angle, eps_comp, eps_tens):
-    # computes the distributions and the integrated sectional forces
-
+    '''
+    Function that computes the distributions and the integrated sectional forces
+    '''
     # Along-walls data points
     s, x, y, wallAngles = [], [], [], []  # lower case coordinates is for the local nodes
     length_prev = 0  # accumulated length of previous walls

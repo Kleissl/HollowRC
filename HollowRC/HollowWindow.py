@@ -12,15 +12,15 @@ from PySide2 import QtGui, QtWidgets, QtCore, QtCharts  # Import the Qt modules 
 import numpy as np
 
 # Local source tree modules
-import Analysis
-import hollow_window  # load the window design incl. events etc. defined in Qt Designer
-import SectionForces
-import Material
-# import Results
-import Geometry
+from . import Analysis
+from . import hollow_window  # load the window design incl. events etc. defined in Qt Designer
+from .SectionForces import SectionForces
+from . import Material
+# import .Results
+from . import Geometry
 import pickle
-import Plots
-from TableInterface import MyTable
+from . import Plots
+from .TableInterface import MyTable
 
 
 class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
@@ -419,7 +419,7 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         N, My, Mz, Vy, Vz, T = row_values[:6]
 
         # Dump into SectionForces class
-        SF = SectionForces.SectionForces(N, My, Mz, Vy, Vz, T)
+        SF = SectionForces(N, My, Mz, Vy, Vz, T)
         return SF
 
     def set_SF_table(self, SF):

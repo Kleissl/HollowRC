@@ -7,7 +7,7 @@ Author: Kenneth C. Kleissl
 # imports
 import math
 import numpy as np
-import Verification
+from .Verification import Verify
 
 
 class CrossSection:
@@ -282,7 +282,7 @@ class Wall:
         for N_flow in self.dist['normal_flow']:  # looping over wall data points
             sigma_x = N_flow / self.thick
             stress = [sigma_x, 0, 0]
-            verification = Verification.Verify(stress, Mat, self.rho_long, self.rho_trans)
+            verification = Verify(stress, Mat, self.rho_long, self.rho_trans)
             H_yield.append(verification.tau_yielding() * self.thick)
         return H_yield
 

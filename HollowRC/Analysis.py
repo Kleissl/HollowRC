@@ -14,10 +14,10 @@ import numpy as np
 import nlopt
 
 # Local source tree modules
-import Verification
-import SectionForces
-import Material
-import Results
+from .Verification import Verify
+from .SectionForces import SectionForces
+from .Material import MatProp
+from .Results import Results
 
 
 def measure_time(func):
@@ -132,7 +132,7 @@ def ULS_analysis(section, SF, Mat, printing=True):
         for j in range(wall.wallNodeN):  # looping over wall data points
             sigma_x = dist['normal_flow'][i] / wall.thick
             stress = [sigma_x, 0, 0]
-            verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
+            verification = Verify(stress, Mat, wall.rho_long, wall.rho_trans)
             H_yield[i] = verification.tau_yielding() * wall.thick
             i += 1  # index counter to be used with continuous dist vectors
 
@@ -158,7 +158,7 @@ def ULS_analysis(section, SF, Mat, printing=True):
     H_yield = np.array(H_yield) * np.sign(H)
 
     # Initiate Results class
-    Res = Results.Results(dist['x'], dist['y'], dist['wallAngles'])
+    Res = Results(dist['x'], dist['y'], dist['wallAngles'])
     Res.add_plot(dist['strain']*100, 'M+N strain', '%', 0.15)
     Res.add_plot(dist['concrete_stress'], 'M+N concrete stress', 'MPa', 0.1)
     Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
@@ -345,7 +345,7 @@ def SLS_analysis(section, SF, Mat):
             sigma_x = dist['normal_flow'][i] / wall.thick
             tau = H[i] / wall.thick
             stress = [sigma_x, 0, tau]
-            verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
+            verification = Verify(stress, Mat, wall.rho_long, wall.rho_trans)
             theta.append(verification.cracked_strut_angle(initial_guess=theta_0))
             # theta_0 = theta[-1]  # memorize theta for initial guess <-- suppressed as it yields theta outside acceptable
             stresses = verification.cracked_equilibrium(theta[i])
@@ -364,7 +364,7 @@ def SLS_analysis(section, SF, Mat):
     sigma_c, sigma_sx, sigma_sy = np.array(sigma_c), np.array(sigma_sx), np.array(sigma_sy)
 
     # Initiate Results class
-    Res = Results.Results(dist['x'], dist['y'], dist['wallAngles'])
+    Res = Results(dist['x'], dist['y'], dist['wallAngles'])
     Res.add_plot(dist['strain']*100, 'M+N strain', '%', 0.15)
     Res.add_plot(dist['concrete_stress'], 'M+N concrete stress', 'MPa', 0.1)
     Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
@@ -387,7 +387,7 @@ def dualSection(section, SF, Mat):
 
     # --------------- Prepare second section ---------------
     dx = 0.001  # [m] Offset
-    SF2 = SectionForces.SectionForces(SF.N, SF.My + dx * SF.Vz, SF.Mz + dx * SF.Vy)  # SIGN changed as positive Vy now increases Mz
+    SF2 = SectionForces(SF.N, SF.My + dx * SF.Vz, SF.Mz + dx * SF.Vy)  # SIGN changed as positive Vy now increases Mz
     x0 = [0 if abs(xi) < 1e-6 else xi for xi in x]  # the initial guess may not contain extremely small values such as 3e-169
 
     # --------------- Optimize plane strain variables for the secondary section ---------------
@@ -414,8 +414,8 @@ def dualSection(section, SF, Mat):
 #     Vx = -Vres * math.sin(load_angle)
 #     print("perp. Vx, Vy =", Vx, Vy)
 #
-#     # SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * Vy, SF.My + dx * Vx)
-#     SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * Vy, SF.My - dx * Vx)
+#     # SF2 = SectionForces(SF.N, SF.Mx + dx * Vy, SF.My + dx * Vx)
+#     SF2 = SectionForces(SF.N, SF.Mx + dx * Vy, SF.My - dx * Vx)
 #     # SF2 = dict()
 #     # SF2['N'] = SF["N"]
 #     # SF2['Mx'] = SF["Mx"] + dx * Vy
@@ -624,7 +624,7 @@ def BendingEQ(section, Mat, NA_angle, eps_comp, eps_tens):
     Mz = sum(wallMz)
 
     # Dump into SectionForces class
-    SF = SectionForces.SectionForces(N, My, Mz)
+    SF = SectionForces(N, My, Mz)
 
     # Arrange stress/flow distributions into a dictionary
     dist = dict()
@@ -680,7 +680,7 @@ def ReinforcementStressAry(eps, Mat):
 #     H_yield = np.array(H_yield) * np.sign(H)
 
 #     # Initiate Results class
-#     Res = Results.Results(dist['x'], dist['y'], dist['wallAngles'])
+#     Res = Results(dist['x'], dist['y'], dist['wallAngles'])
 #     Res.add_plot(dist['strain']*100, 'M+N strain', '%', 0.15)
 #     Res.add_plot(dist['concrete_stress'], 'M+N concrete stress', 'MPa', 0.1)
 #     Res.add_plot(dist['reinforcement_stress'], 'M+N reinforcement stress', 'MPa', 0.15)
@@ -707,7 +707,7 @@ def ReinforcementStressAry(eps, Mat):
 #     # --------------- Dual-section analysis for initial guess ---------------
 #     # Prepare second section
 #     dx = 0.001  # [m] Offset
-#     SF2 = SectionForces.SectionForces(SF.N, SF.Mx + dx * SF.Vy, SF.My - dx * SF.Vx)
+#     SF2 = SectionForces(SF.N, SF.Mx + dx * SF.Vy, SF.My - dx * SF.Vx)
 #     # SF2 = prep_dual_section(SF, dx)  # nabouring SF
 
 #     # Optimize plane strain variables for the secondary section
@@ -737,7 +737,7 @@ def ReinforcementStressAry(eps, Mat):
 #         for j in range(wall.wallNodeN):  # looping over wall data points
 #             sigma_x = dist['normal_flow'][i] / wall.thick
 #             stress = [sigma_x, 0, 0]
-#             verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
+#             verification = Verify(stress, Mat, wall.rho_long, wall.rho_trans)
 #             H_yield_temp.append(verification.tau_yielding() * wall.thick)
 #             i += 1  # index counter to be used with continuous dist vectors
 #         # print(wall.integrate_dist(H_yield_temp))
@@ -819,7 +819,7 @@ def ReinforcementStressAry(eps, Mat):
 #             sigma_x = dist['normal_flow'][i] / wall.thick
 #             tau = H[i] / wall.thick
 #             stress = [sigma_x, 0, tau]
-#             verification = Verification.Verify(stress, Mat, wall.rho_long, wall.rho_trans)
+#             verification = Verify(stress, Mat, wall.rho_long, wall.rho_trans)
 #             ur_over.append(max(0, verification.utilization() - 1))
 #             # print("sigma_x, tau, UR =", sigma_x, tau, f[-1])
 #             i += 1  # index counter to be used with continuous dist vectors
@@ -862,7 +862,7 @@ def ReinforcementStressAry(eps, Mat):
 #         sigma_x = dist['normal_flow'][i] / thick
 #         tau = H[i] / thick
 #         stress = [sigma_x, 0, tau]
-#         verification = Verification.Verify(stress)
+#         verification = Verify(stress)
 #         ur_over.append(max(0, verification.utilization() - 1))
 #
 #         # print("sigma_x, tau, UR =", sigma_x, tau, f[-1])
@@ -972,10 +972,10 @@ if __name__ == '__main__':  # if we're running file directly and not importing i
     Vy = 0
     Vz = 2000
     T = 0
-    SF = SectionForces.SectionForces(N, My, Mz, Vy, Vz, T)
+    SF = SectionForces(N, My, Mz, Vy, Vz, T)
 
     # Initiate Material class
-    Mat = Material.MatProp()
+    Mat = MatProp()
 
     # Call SLS analysis
     Res = SLS_analysis(Geometry, SF, Mat)

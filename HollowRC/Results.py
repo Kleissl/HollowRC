@@ -13,7 +13,6 @@ class Results:
     Attributes:
         ...
     """
-    # Class variables defaults
 
     def __init__(self, x, y, wallAngles):
         # Instance variables
@@ -28,6 +27,7 @@ class Results:
         self.plot_scale = []
 
         self.info_msg = None
+        self.load_factors = {'bending': None, 'shear': None}
 
     def add_plot(self, data, name=None, unit='', scale=0.10):
         if self.plot_count == 10:

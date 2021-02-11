@@ -307,8 +307,32 @@ class HollowWindow(QtWidgets.QMainWindow, hollow_window.Ui_MainWindow):
         # update result plot
         self.graphicsViewResults.plot(self.Res)
 
+        # update bending and shear URs
+        self.update_UR_bending_shear()
+
         # return mouse cursor to normal ArrowCursor
         self.setCursor(QtCore.Qt.ArrowCursor)
+
+    def update_UR_bending_shear(self):
+        ''' This method updates the UR result table cells '''
+        bending_load_fac = self.Res.load_factors['bending']
+        if bending_load_fac:
+            if bending_load_fac < 1:
+                self.SectionForces_tableWidget.set_cell_value(0, 6, "{:.1f}%".format(100/bending_load_fac))  # insert shear UR
+            else:
+                self.SectionForces_tableWidget.set_cell_value(0, 6, "OK")
+        else:
+            self.SectionForces_tableWidget.set_cell_value(0, 6, "")
+
+        shear_load_fac = self.Res.load_factors['shear']
+        print('shear_load_fac:', shear_load_fac)
+        if shear_load_fac:
+            if shear_load_fac < 1:
+                self.SectionForces_tableWidget.set_cell_value(0, 7, "{:.1f}%".format(100/shear_load_fac))  # insert shear UR
+            else:
+                self.SectionForces_tableWidget.set_cell_value(0, 7, "OK")
+        else:
+            self.SectionForces_tableWidget.set_cell_value(0, 7, "")
 
     def toggle_menu(self, state):
         if state:

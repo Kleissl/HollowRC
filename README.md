@@ -4,7 +4,7 @@
 
 # HollowRC
 
-A Python libary for general design of hollow reinforced concrete sections under combined actions packed into an easy to use executable.
+A Python library for general design of hollow reinforced concrete sections under combined actions packed into an easy to use executable.
 
 ## Getting Started - Installation
 
@@ -14,7 +14,7 @@ The easy way:
 2. Unzip the distribution package
 3. Execute HollowRC.exe
 
-If you're familar with Python and prefer to run the code directly:
+If you're familiar with Python and prefer to run the code directly:
 
 1. Fork/clone the repository or download the [zipped master-branch source code](https://github.com/Kleissl/HollowRC/archive/master.zip)
 2. Pip install requirements.txt

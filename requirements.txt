@@ -1,8 +1,8 @@
-# Library dependencies for HollowRC 
+# Library dependencies for HollowRC
 # To install, run: "pip install -r requirements.txt"
 
 # for the GUI
-PySide2==5.13.1
+PySide2==5.15.2
 
 # for math and array functionalities
 numpy==1.16.4

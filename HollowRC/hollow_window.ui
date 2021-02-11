@@ -1734,17 +1734,17 @@
   <customwidget>
    <class>MyGeometryView</class>
    <extends>QGraphicsView</extends>
-   <header>Plots</header>
+   <header>.Plots</header>
   </customwidget>
   <customwidget>
    <class>MyResultView</class>
    <extends>QGraphicsView</extends>
-   <header>Plots</header>
+   <header>.Plots</header>
   </customwidget>
   <customwidget>
    <class>MyTable</class>
    <extends>QTableWidget</extends>
-   <header>TableInterface</header>
+   <header>.TableInterface</header>
   </customwidget>
  </customwidgets>
  <resources>

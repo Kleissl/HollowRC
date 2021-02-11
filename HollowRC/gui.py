@@ -10,8 +10,7 @@ import sys  # We need sys so that we can pass argv to QApplication
 # Third-party library modules
 from PySide2 import QtWidgets, QtGui
 # Local source tree modules
-from HollowWindow import HollowWindow  # import the MainWindow class
-
+from .HollowWindow import HollowWindow  # import the MainWindow class
 
 def main():
     # Create an instance of QApplication (Qt's application object).
@@ -50,8 +49,7 @@ def my_exception_hook(type_, value, traceback_):   # if QtCore.QT_VERSION >= 0x5
     sys.exit(1)  # Exit Python by raising the SystemExit exception with nonzero exit status
 
 
-if __name__ == '__main__':  # if we're running file directly and not importing it
-    main()  # run the main function
+main()  # run the main function
 
 # example with a QDialog being passed into the MainWindow class:
 # http://projects.skylogic.ca/blog/how-to-install-pyqt5-and-build-your-first-gui-in-python-3-4/

@@ -5,7 +5,7 @@
 PySide2==5.13.1
 
 # for math and array functionalities
-numpy==1.16.4
+numpy==1.22.0
 
 # General optimization solver
 nlopt==2.6.1

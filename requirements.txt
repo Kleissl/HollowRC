@@ -14,4 +14,4 @@ nlopt==2.6.1
 PyInstaller==3.6
 
 # for calling Githib API
-requests==2.22.0
+requests==2.31.0
